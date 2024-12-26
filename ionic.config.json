@@ -1,0 +1,7 @@
+{
+  "name": "InventarioScanner",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
