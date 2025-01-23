@@ -108,6 +108,14 @@ const path = window.location.pathname.split('folder/')[1];
 if (path !== undefined) {
   selectedIndex.value = appPages.findIndex((page) => page.title.toLowerCase() === path.toLowerCase());
 }
+
+console.log("========= hola ==========");
+import {Producto, DatabaseService} from '@/services/database.service.ts';
+
+let productos: Productos[] = [];
+let dbs: DatabaseService = new DatabaseService();
+dbs.añadir_producto(["daniel", "5", 'candela', 'nerd, gamer', null, null ]);
+console.log(dbs.obtener_productos()[0]);
 </script>
 
 <style scoped>
