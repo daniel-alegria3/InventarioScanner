@@ -47,62 +47,31 @@ import {
 } from '@ionic/vue';
 import { ref } from 'vue';
 import {
-  archiveOutline,
-  archiveSharp,
   bookmarkOutline,
   bookmarkSharp,
-  heartOutline,
-  heartSharp,
   mailOutline,
   mailSharp,
   paperPlaneOutline,
   paperPlaneSharp,
-  trashOutline,
-  trashSharp,
-  warningOutline,
-  warningSharp,
 } from 'ionicons/icons';
 
 const selectedIndex = ref(0);
 const appPages = [
   {
-    title: 'Inbox',
-    url: '/folder/Inbox',
+    title: 'Venta',
+    url: '/folder/Venta',
     iosIcon: mailOutline,
     mdIcon: mailSharp,
   },
   {
-    title: 'Outbox',
-    url: '/folder/Outbox',
+    title: 'Inventario',
+    url: '/folder/Inventario',
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp,
-  },
-  {
-    title: 'Favorites',
-    url: '/folder/Favorites',
-    iosIcon: heartOutline,
-    mdIcon: heartSharp,
-  },
-  {
-    title: 'Archived',
-    url: '/folder/Archived',
-    iosIcon: archiveOutline,
-    mdIcon: archiveSharp,
-  },
-  {
-    title: 'Trash',
-    url: '/folder/Trash',
-    iosIcon: trashOutline,
-    mdIcon: trashSharp,
-  },
-  {
-    title: 'Spam',
-    url: '/folder/Spam',
-    iosIcon: warningOutline,
-    mdIcon: warningSharp,
-  },
+  }
 ];
-const labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
+const labels = ['Family'];
+
 
 const path = window.location.pathname.split('folder/')[1];
 if (path !== undefined) {
