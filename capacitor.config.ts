@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     CapacitorSQLite: {
-      iosDatabaseLocation: 'Library/InventarioScannerDatabase',
+      iosDatabaseLocation: 'Library/InventarioScanner',
       iosIsEncryption: true,
       iosKeychainPrefix: 'inventory-scanner',
       iosBiometric: {
@@ -23,9 +23,9 @@ const config: CapacitorConfig = {
         biometricSubTitle : "Log in using your biometric"
     },
     electronIsEncryption: true,
-    electronWindowsLocation: "C:\\ProgramData\\CapacitorDatabases",
-    electronMacLocation: "/Volumes/Development_Lacie/Development/Databases",
-    electronLinuxLocation: "Databases"
+    electronWindowsLocation: "C:\\ProgramData\\InventarioScanner",
+    electronMacLocation: "/Volumes/Development_Lacie/Development/InventarioScanner",
+    electronLinuxLocation: ".local/share/InventarioScanner"
     }
   }
 };

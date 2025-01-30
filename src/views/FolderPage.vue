@@ -26,6 +26,32 @@
 
 <script setup lang="ts">
 import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+
+/// Debugging
+import { onIonViewDidEnter } from '@ionic/vue';
+
+import {Producto, DatabaseService} from '@/services/database-service';
+
+let dbs: DatabaseService;
+let data: Producto[];
+
+onIonViewDidEnter(async () => {
+  dbs = new DatabaseService();
+  await dbs.init();
+  data = await dbs.obtener_productos_por_texto("nombre1");
+  data = await dbs.obtener_producto_por_cod_barra("12374");
+  await dbs.añadir_producto({
+    nombre: "noooo",
+    precio: 666,
+    unidad_medida: "woa",
+    categorias: null,
+    foto:  null,
+    cod_barra: null,
+  } as Producto);
+  data = await dbs.obtener_productos();
+  console.log(data);
+});
+
 </script>
 
 <style scoped>
