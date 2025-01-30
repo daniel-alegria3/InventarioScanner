@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { getCurrentInstance } from 'vue';
+import { getCurrentInstance, inject } from 'vue';
 import { SQLiteDBConnection, SQLiteHook } from 'vue-sqlite-hook/dist';
 
 const DB_INVENTARIO = "inventariodb";
@@ -15,16 +15,14 @@ export interface Producto {
 }
 
 export class DatabaseService {
-    private sqlite!: SQLiteHook;
+    private sqlite!: SQLiteHook | undefined;
     private db!: SQLiteDBConnection;
 
-    constructor() {
+    constructor(sqlite: SQLiteHook) {
+        this.sqlite = inject('$sqlite');
     }
 
-    async init() {
-        const app = getCurrentInstance()
-        this.sqlite = app?.appContext.config.globalProperties.$sqlite;
-
+    async init(): Promise<void> {
         const ret = await this.sqlite.checkConnectionsConsistency();
         const isConn = (await this.sqlite.isConnection("db_inventario", false)).result;
 

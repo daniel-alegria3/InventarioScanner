@@ -45,7 +45,7 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from '@ionic/vue';
-import { ref } from 'vue';
+import { ref, provide } from 'vue';
 import {
   bookmarkOutline,
   bookmarkSharp,
@@ -103,10 +103,10 @@ const onProgressExport = async (progress: string) => {
 }
 
 if( app != null) {
-  app.appContext.config.globalProperties.$sqlite = useSQLite({
+  provide('$sqlite', useSQLite({
     onProgressImport,
-    onProgressExport
-  });
+    onProgressExport,
+  }));
 }
 </script>
 

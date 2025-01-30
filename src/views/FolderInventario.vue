@@ -22,18 +22,17 @@
 
 <script setup lang="ts">
 import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
-import { TablaUsuarios } from '@/components/TablaUsuarios.vue';
+import TablaUsuarios from '@/components/TablaUsuarios.vue';
 
 /// Debugging
 import { onIonViewDidEnter } from '@ionic/vue';
 
 import {Producto, DatabaseService} from '@/services/database-service';
 
-let dbs: DatabaseService;
+let dbs: DatabaseService = new DatabaseService();
 let data: Producto[];
 
 onIonViewDidEnter(async () => {
-  dbs = new DatabaseService();
   await dbs.init();
   data = await dbs.obtener_productos_por_texto("nombre1");
   data = await dbs.obtener_producto_por_cod_barra("12374");
