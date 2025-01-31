@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, provide } from 'vue'
 import App from './App.vue'
 import router from './router';
 
@@ -57,9 +57,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   const [jsonListeners, setJsonListeners] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [message, setMessage] = useState("");
-  app.config.globalProperties.$isModalOpen = {isModal: isModal, setIsModal: setIsModal};
-  app.config.globalProperties.$isJsonListeners = {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners};
-  app.config.globalProperties.$messageContent = {message: message, setMessage: setMessage};
+  provide('$isJsonListeners', {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners});
+  provide('$isModalOpen', {isModal: isModal, setIsModal: setIsModal});
+  provide('$messageContent', {message: message, setMessage: setMessage});
 
   //  Existing Connections Store
   const [existConn, setExistConn] = useState(false);

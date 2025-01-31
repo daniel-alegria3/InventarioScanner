@@ -27,7 +27,7 @@ import TablaUsuarios from '@/components/TablaUsuarios.vue';
 /// Debugging
 import { onIonViewDidEnter } from '@ionic/vue';
 
-import {Producto, DatabaseService} from '@/services/database-service';
+import {Producto, DatabaseService} from '@/services/DatabaseService';
 
 let dbs: DatabaseService = new DatabaseService();
 let data: Producto[];

@@ -45,7 +45,7 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from '@ionic/vue';
-import { ref, provide } from 'vue';
+import { ref, provide, inject } from 'vue';
 import {
   bookmarkOutline,
   bookmarkSharp,
@@ -82,10 +82,9 @@ if (path !== undefined) {
 import { getCurrentInstance } from 'vue';
 import { useSQLite } from 'vue-sqlite-hook';
 
-const app = getCurrentInstance();
-const isModalOpen = app?.appContext.config.globalProperties.$isModalOpen;
-const contentMessage = app?.appContext.config.globalProperties.$messageContent;
-const jsonListeners = app?.appContext.config.globalProperties.$isJsonListeners;
+const jsonListeners = inject('$isJsonListeners');
+const isModalOpen = inject('$isModalOpen');
+const contentMessage = inject('$messageContent');
 
 const onProgressImport = async (progress: string) => {
   if(jsonListeners.jsonListeners.value) {
@@ -102,6 +101,7 @@ const onProgressExport = async (progress: string) => {
   }
 }
 
+const app = getCurrentInstance();
 if( app != null) {
   provide('$sqlite', useSQLite({
     onProgressImport,

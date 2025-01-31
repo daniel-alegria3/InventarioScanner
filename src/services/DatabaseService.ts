@@ -1,5 +1,3 @@
-import { expect } from 'vitest';
-import { getCurrentInstance, inject } from 'vue';
 import { SQLiteDBConnection, SQLiteHook } from 'vue-sqlite-hook/dist';
 
 const DB_INVENTARIO = "inventariodb";
@@ -15,11 +13,11 @@ export interface Producto {
 }
 
 export class DatabaseService {
-    private sqlite!: SQLiteHook | undefined;
+    private sqlite: SQLiteHook | undefined;
     private db!: SQLiteDBConnection;
 
-    constructor(sqlite: SQLiteHook) {
-        this.sqlite = inject('$sqlite');
+    constructor(sqlite: SQLiteHook | undefined) {
+        this.sqlite = sqlite;
     }
 
     async init(): Promise<void> {
@@ -113,10 +111,10 @@ export class DatabaseService {
         return [
             producto.nombre,
             producto.precio,
-            producto.unidad_medida,
-            producto.categorias,
-            producto.foto,
-            producto.cod_barra,
+            producto.unidad_medida ?? null,
+            producto.categorias ?? null,
+            producto.foto ?? null,
+            producto.cod_barra ?? null,
         ];
     }
 }
