@@ -13,7 +13,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/folder/Inventario',
     component: () => import ('../views/FolderInventario.vue')
+  },
+  {
+    path: '/folder/Venta/buscarProducto',
+    component: () => import ('../components/BuscarProducto.vue')
   }
+
 ]
 
 const router = createRouter({

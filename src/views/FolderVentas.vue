@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
-import TablaUsuarios from '@/components/TablaUsuarios.vue';
+import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon } from '@ionic/vue';
+import TablaVentas from '@/components/TablaVentas.vue';
+import { search, searchOutline, searchSharp } from 'ionicons/icons';
 </script>
 
 <template>
@@ -19,7 +20,12 @@ import TablaUsuarios from '@/components/TablaUsuarios.vue';
                     <ion-title size="large">Inventario</ion-title>
                 </ion-toolbar>
             </ion-header>
-            <TablaUsuarios />
+            <TablaVentas />
+            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                <ion-fab-button router-direction="forward" router-link="/folder/Venta/buscarProducto">
+                    <ion-icon :icon="search" :ios="searchOutline" :md="searchSharp" />
+                </ion-fab-button>
+            </ion-fab>
         </ion-content>
     </ion-page>
 </template>
