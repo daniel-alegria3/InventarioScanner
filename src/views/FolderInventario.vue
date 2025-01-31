@@ -26,10 +26,11 @@ import TablaUsuarios from '@/components/TablaUsuarios.vue';
 
 /// Debugging
 import { onIonViewDidEnter } from '@ionic/vue';
+import { inject } from 'vue';
 
 import {Producto, DatabaseService} from '@/services/DatabaseService';
 
-let dbs: DatabaseService = new DatabaseService();
+let dbs: DatabaseService = new DatabaseService(inject('$sqlite'));
 let data: Producto[];
 
 onIonViewDidEnter(async () => {

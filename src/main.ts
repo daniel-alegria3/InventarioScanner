@@ -38,7 +38,6 @@ import './theme/variables.css';
 import { defineCustomElements as jeepSqlite } from "jeep-sqlite/loader";
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
-import { useState } from '@/composables/state';
 import { db_inventario_schema } from '@/utils/sqlite-schemas';
 
 jeepSqlite(window);
@@ -51,19 +50,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     .use(IonicVue)
     .use(router);
 
-  /* SQLite Global Variables*/
-
-  // Only if you want to use the onProgressImport/Export events
-  const [jsonListeners, setJsonListeners] = useState(false);
-  const [isModal, setIsModal] = useState(false);
-  const [message, setMessage] = useState("");
-  provide('$isJsonListeners', {jsonListeners: jsonListeners, setJsonListeners: setJsonListeners});
-  provide('$isModalOpen', {isModal: isModal, setIsModal: setIsModal});
-  provide('$messageContent', {message: message, setMessage: setMessage});
-
-  //  Existing Connections Store
-  const [existConn, setExistConn] = useState(false);
-  app.config.globalProperties.$existingConn = {existConn: existConn, setExistConn: setExistConn};
 
   try {
     if(platform === "web") {

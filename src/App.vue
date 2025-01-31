@@ -45,7 +45,7 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from '@ionic/vue';
-import { ref, provide, inject } from 'vue';
+import { ref, provide } from 'vue';
 import {
   bookmarkOutline,
   bookmarkSharp,
@@ -81,23 +81,40 @@ if (path !== undefined) {
 // Sqlite
 import { getCurrentInstance } from 'vue';
 import { useSQLite } from 'vue-sqlite-hook';
+import { useState } from '@/composables/state';
 
-const jsonListeners = inject('$isJsonListeners');
-const isModalOpen = inject('$isModalOpen');
-const contentMessage = inject('$messageContent');
+/* SQLite Global Variables*/
+
+// Only if you want to use the onProgressImport/Export events
+const {isJsonListeners, setIsJsonListeners} = useState(false);
+const {isModalOpen, setIsModalOpen} = useState(false);
+const {messageContent, setMessageContent} = useState("");
+provide('$isJsonListeners', {isJsonListeners, setIsJsonListeners});
+provide('$isModalOpen', {isModalOpen, setIsModalOpen});
+provide('$messageContent', {messageContent, setMessageContent});
+
+//[
+// const { isJsonListeners, setIsJsonListeners } = inject('$isJsonListeners');
+// const { isModalOpen, setIsModalOpen } = inject('$isModalOpen');
+// const { messageContent, setMessageContent } = inject('$messageContent');
+//]
+
+//  Existing Connections Store
+const [existConn, setExistConn] = useState(false);
+provide('$existingConn', {existConn: existConn, setExistConn: setExistConn});
 
 const onProgressImport = async (progress: string) => {
-  if(jsonListeners.jsonListeners.value) {
-    if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
-    contentMessage.setMessage(
-        contentMessage.message.value.concat(`${progress}\n`));
+  if(isJsonListeners.value) {
+    if(!isModalOpen.value) setIsModalOpen(true);
+    setMessageContent(
+        messageContent.value.concat(`${progress}\n`));
   }
 }
 const onProgressExport = async (progress: string) => {
-  if(jsonListeners.jsonListeners.value) {
-    if(!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
-    contentMessage.setMessage(
-      contentMessage.message.value.concat(`${progress}\n`));
+  if(isJsonListeners.value) {
+    if(!isModalOpen.value) setIsModalOpen(true);
+    setMessageContent(
+      messageContent.value.concat(`${progress}\n`));
   }
 }
 

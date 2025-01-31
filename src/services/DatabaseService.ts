@@ -1,7 +1,5 @@
 import { SQLiteDBConnection, SQLiteHook } from 'vue-sqlite-hook/dist';
 
-const DB_INVENTARIO = "inventariodb";
-
 export interface Producto {
     id: number;
     nombre: string;
