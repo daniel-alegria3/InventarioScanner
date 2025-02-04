@@ -15,11 +15,11 @@
                     </ion-row>
 
                     <!-- Filas dinámicas -->
-                    <ion-row v-for="(usuario, index) in usuarios" :key="index">
-                        <ion-col size="3">{{ usuario.producto }}</ion-col>
-                        <ion-col size="3">{{ usuario.cantidad }}</ion-col>
-                        <ion-col size="3">S/ {{ usuario.precio }}</ion-col>
-                        <ion-col size="3">S/ {{ usuario.cantidad * usuario.precio }}</ion-col>
+                    <ion-row v-for="(producto, index) in Productos" :key="index">
+                        <ion-col size="3">{{ producto.nombre }}</ion-col>
+                        <ion-col size="3">{{ producto.cantidad }}</ion-col>
+                        <ion-col size="3">S/ {{ producto.precio }}</ion-col>
+                        <ion-col size="3">S/ {{ producto.cantidad * producto.precio }}</ion-col>
                     </ion-row>
                 </ion-grid>
             </ion-card-content>
@@ -59,29 +59,32 @@ import {
     cash
 } from 'ionicons/icons';
 import { ref, watch } from 'vue';
-const usuarios = ref([
-    { producto: 'Gaseosa ORO', cantidad: 1, precio: 1.5, total: 0 },
-    { producto: 'Galleta', cantidad: 2, precio: 0.80, total: 0 },
-    { producto: 'Pastel', cantidad: 3, precio: 1.0, total: 0 },
-    { producto: 'Chocolate', cantidad: 4, precio: 0.50, total: 0 },
-    { producto: 'Caramelo', cantidad: 5, precio: 0.20, total: 0 },
+const Productos = ref([
+    { nombre: 'Gaseosa ORO', cantidad: 1, precio: 1.5, total: 0 },
+    { nombre: 'Galleta', cantidad: 2, precio: 0.80, total: 0 },
+    { nombre: 'Pastel', cantidad: 3, precio: 1.0, total: 0 },
+    { nombre: 'Chocolate', cantidad: 4, precio: 0.50, total: 0 },
+    { nombre: 'Caramelo', cantidad: 5, precio: 0.20, total: 0 },
 ]);
 const Total = ref(0);
 
 const calcularTotal = () => {
-    Total.value = usuarios.value.reduce((suma, usuario) => {
+    Total.value = Productos.value.reduce((suma, usuario) => {
         return suma + usuario.cantidad * usuario.precio;
     }, 0)
 }
-watch(usuarios, calcularTotal, { deep: true });
+watch(Productos, calcularTotal, { deep: true });
 calcularTotal();
 const cancelar = () => {
-    usuarios.value = [];
+    Productos.value = [];
     Total.value = 0;
 }
-const agregarProducto = () => {
-    usuarios.value.push({ producto: 'Producto', cantidad: 1, precio: 1, total: 0 });
-}
+const props = defineProps<{ productoSeleccionado: { nombre: string; cantidad: number; precio: number; total: number }[] }>();
+
+// Detectar cambios y mostrar en consola
+watch(() => props.productoSeleccionado, (newVal) => {
+    Productos.value.push(...newVal);
+}, { deep: true });
 </script>
 
 
@@ -113,7 +116,8 @@ ion-row:nth-child(even) {
 
 .TotalPrecio {
     display: flex;
-    justify-content: space-between; /* Espacio entre el texto y el total */
+    justify-content: space-between;
+    /* Espacio entre el texto y el total */
     padding: 0px 10% 0px 0px;
     font-size: 1.5em;
     font-weight: bold;

@@ -12,18 +12,18 @@
         <ion-grid class="ion-justify-content-center">
           <ion-card>
             <ion-card-content>
-              <!--<ion-col size="12" size-md="8" size-lg="6" size-xl="4">
+              <!-- <ion-col size="12" size-md="8" size-lg="6" size-xl="4">
             EN VEZ DE USAR ESTO, CREA TUS PROPIAR REGLAS "MEDIA" EN CSS -->
               <ion-row>
                 <ion-col>
-                  <h1> Interes Simple </h1>
+                  <h1> Buscar Producto </h1>
                 </ion-col>
               </ion-row>
   
               <form @submit.prevent="handleSubmit">
                 <ion-row>
                   <ion-col>
-                    <ion-input v-model="form_data.name" fill="outline" label-placement="floating" label="Nombre"
+                    <ion-input v-model="form_data.name" fill="outline" label-placement="floating" label="Nombre del producto"
                       type="text">
                     </ion-input>
                   </ion-col>
@@ -35,31 +35,10 @@
                       label-placement="floating" label="Precio" type="number">
                     </ion-input>
                   </ion-col>
-  
-                  <!-- <ion-col size="auto"> -->
-                  <ion-col size="auto" class="ion-align-self-center">
-                    <ion-buttons>
-                      <ion-button shape="round" fill="solid"> <!-- @click="" -->
-                        barcode
-                        <ion-icon aria-hidden="true" slot="end" :ios="barcodeOutline" :md="barcodeSharp" /> </ion-button>
-                    </ion-buttons>
-                  </ion-col>
-                </ion-row>
-  
-                <ion-row>
                   <ion-col>
                     <ion-input v-model="form_data.quantity" fill="outline" label-placement="floating" label="Cantidad"
                       type="number">
                     </ion-input>
-                  </ion-col>
-  
-                  <ion-col size="auto">
-                    <ion-select v-model="form_data.measure" fill="outline" label="" interface="popover" placeholder="medida"
-                      @ion-change="handleMeasuresChange">
-                      <ion-select-option v-for="(m, i) in MEASURES" :key="i">
-                        {{ m }}
-                      </ion-select-option>
-                    </ion-select>
                   </ion-col>
                 </ion-row>
   
@@ -78,7 +57,7 @@
   
                 <ion-row>
                   <ion-col>
-                    <ion-button expand="block" type="submit">{{ button_label }}</ion-button>
+                    <ion-button expand="block" type="submit">Agregar</ion-button>
                   </ion-col>
                 </ion-row>
               </form>
@@ -114,17 +93,12 @@
     IonBackButton,
     IonInput,
     alertController,
-    IonIcon,
   } from '@ionic/vue';
   import {
-    barcodeOutline,
-    barcodeSharp,
   } from 'ionicons/icons';
-  import { useRoute, onBeforeRouteLeave, } from 'vue-router';
+  import { onBeforeRouteLeave, } from 'vue-router';
   import { ref, computed, toRaw, } from 'vue';
   
-  const route = useRoute();
-  const MEASURES = ["kg", "g", "lb", "oz"]; // Add your measures here
   const CATEGORIES = ["Electronics", "Clothing", "Food", "Books"]; // Add your categories here
   const default_form = {
     name: "",
@@ -135,24 +109,7 @@
     categories: "",
   };
   
-  const form_data = ref({ ...default_form });
-  
-  const title_label = ref("");
-  const button_label = ref("");
-  
-  const id = route.query.id;
-  const id_exists = false;
-  
-  
-  if (id_exists) {
-    console.log("CHANGE from sqlite")
-    title_label.value = "Editando Entrada"
-    button_label.value = "Actualizar"
-  } else {
-    console.log("CREATE from sqlite")
-    title_label.value = "Creando Entrada"
-    button_label.value = "Crear"
-  }
+  const form_data = ref({ ...default_form });  
   
   const hasFormChanged = computed(() => {
     return Object.keys(form_data.value).some((field) => {
