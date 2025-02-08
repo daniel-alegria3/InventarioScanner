@@ -5,9 +5,10 @@ export interface Producto {
     nombre: string;
     precio: number;
     unidad_medida: string | null;
-    categorias: string | null; // comma separated values
+    categorias: string[] | null; // comma separated values
     foto: any | null; // TODO: give it a proper type
     cod_barra: string | null; // TODO: prone to change
+    stock: number | null; // TODO: prone to change
 }
 
 export class DatabaseService {
@@ -38,39 +39,53 @@ export class DatabaseService {
             FROM producto;
         `);
         await this.db.close();
-        return res.values as Producto[];
+        return this.array_to_producto(res.values as any[]);
     }
 
     async obtener_productos_por_texto(texto: string): Promise<Producto[]> {
         await this.db.open();
         let texto_buscar = `%${texto}%`;
         const res = await this.db.query(`
-            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra
+            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
             FROM producto
             WHERE nombre LIKE ? OR categorias LIKE ?;`,
             [texto_buscar, texto_buscar]
         );
         await this.db.close();
-        return res.values as Producto[];
+        return this.array_to_producto(res.values as any[]);
+    }
+
+    async obtener_productos_por_nombre_y_categorias(nombre: string, categorias: string[]): Promise<Producto[]> {
+        await this.db.open();
+        let name = `%${nombre}%`;
+        let categories = categorias.map(cat => `LIKE %${cat}%`).join(" OR ");
+        const res = await this.db.query(`
+            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
+            FROM producto
+            WHERE nombre LIKE ? OR (${categories});`,
+            [name]
+        );
+        await this.db.close();
+        return this.array_to_producto(res.values as any[]);
     }
 
     async obtener_producto_por_cod_barra(cod_barra: string): Promise<Producto[]> {
         await this.db.open();
         const res = await this.db.query(`
-            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra
+            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
             FROM producto
             WHERE cod_barra = ?;`,
             [cod_barra]
         );
         await this.db.close();
-        return res.values as Producto[];
+        return this.array_to_producto(res.values as any[]);
     }
 
     async añadir_producto(producto: Producto): Promise<void> {
         await this.db.open();
         const res = await this.db.run(`
-            INSERT INTO producto (nombre, precio, unidad_medida, categorias, foto, cod_barra)
-            VALUES (?, ?, ?, ?, ?, ?);`,
+            INSERT INTO producto (nombre, precio, unidad_medida, categorias, foto, cod_barra, stock)
+            VALUES (?, ?, ?, ?, ?, ?, ?);`,
             this.producto_to_array(producto)
         );
         await this.check_run_response(res);
@@ -89,7 +104,7 @@ export class DatabaseService {
         const params = this.producto_to_array(producto).concat([id]);
         const res = await this.db.run(`
             UPDATE producto
-            SET nombre = ?, precio = ?, unidad_medida = ?, categorias = ?, foto = ?, cod_barra = ?
+            SET nombre = ?, precio = ?, unidad_medida = ?, categorias = ?, foto = ?, cod_barra = ?, stock = ?
             WHERE id = ?`,
             params
         );
@@ -100,19 +115,35 @@ export class DatabaseService {
     async check_run_response(res: any): Promise<void> {
         // For db.run() using INSERT, UPDATE and DELETE
         if(res.changes && res.changes.changes && res.changes.changes < 0) {
-            console.log("aww man");
             throw new Error(`Error: sqlite query failed`);
         }
     }
 
     producto_to_array(producto: Producto): any[] {
+        let cats;
+        let categorias = producto.categorias ?? null;
+        if (categorias) {
+            cats = categorias.join(",");
+        }
         return [
             producto.nombre,
             producto.precio,
             producto.unidad_medida ?? null,
-            producto.categorias ?? null,
+            cats,
             producto.foto ?? null,
             producto.cod_barra ?? null,
+            producto.stock ?? null,
         ];
+    }
+
+    array_to_producto(array: any[]): Producto[] {
+        return array.map(this.tranformar_categorias);
+    }
+
+    tranformar_categorias(obj: any): Producto {
+        return {
+            ...obj,
+            categorias: obj.categorias ? obj.categorias.split(",") : [],
+        }
     }
 }
