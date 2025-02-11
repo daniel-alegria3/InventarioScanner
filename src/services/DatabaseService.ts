@@ -56,14 +56,29 @@ export class DatabaseService {
     }
 
     async obtener_productos_por_nombre_y_categorias(nombre: string, categorias: string[]): Promise<Producto[]> {
+        if (nombre.trim() === "") {
+            return [] as any;
+        }
+
         await this.db.open();
-        let name = `%${nombre}%`;
-        let categories = categorias.map(cat => `LIKE %${cat}%`).join(" OR ");
+        let params = [];
+        let nombre_cond = "";
+        let categorias_cond = "";
+
+        if (categorias.length > 0 ) {
+            categorias_cond = "("  + categorias.map(() => `categorias LIKE ?`).join(" OR ") +  ") AND";
+            params.push(...categorias.map(cat => `%${cat}%`));
+        }
+        if (nombre.trim() !== "" ) {
+            nombre_cond = "nombre LIKE ?";
+            params.push(`%${nombre}%`);
+        }
+
         const res = await this.db.query(`
             SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
             FROM producto
-            WHERE nombre LIKE ? OR (${categories});`,
-            [name]
+            WHERE ${categorias_cond} ${nombre_cond};`,
+            params
         );
         await this.db.close();
         return this.array_to_producto(res.values as any[]);
