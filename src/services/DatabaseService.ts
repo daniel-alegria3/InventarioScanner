@@ -56,7 +56,7 @@ export class DatabaseService {
     }
 
     async obtener_productos_por_nombre_y_categorias(nombre: string, categorias: string[]): Promise<Producto[]> {
-        if (nombre.trim() === "") {
+        if (nombre.trim() === "" && categorias.length === 0 ) {
             return [] as any;
         }
 
@@ -66,11 +66,14 @@ export class DatabaseService {
         let categorias_cond = "";
 
         if (categorias.length > 0 ) {
-            categorias_cond = "("  + categorias.map(() => `categorias LIKE ?`).join(" OR ") +  ") AND";
+            categorias_cond += "("  + categorias.map(() => `categorias LIKE ?`).join(" OR ") +  ")";
             params.push(...categorias.map(cat => `%${cat}%`));
+            if (nombre.trim() !== "" ) {
+                nombre_cond += "AND ";
+            }
         }
         if (nombre.trim() !== "" ) {
-            nombre_cond = "nombre LIKE ?";
+            nombre_cond += "nombre LIKE ?";
             params.push(`%${nombre}%`);
         }
 
