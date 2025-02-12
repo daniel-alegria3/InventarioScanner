@@ -1,52 +1,81 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button color="primary"></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Inventario</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Inventario</ion-title>
-        </ion-toolbar>
+      <!-- Header -->
+      <ion-header :translucent="true">
+          <ion-toolbar>
+              <ion-buttons slot="start">
+                  <ion-menu-button color="primary"></ion-menu-button>
+              </ion-buttons>
+              <ion-title>Inventario</ion-title>
+          </ion-toolbar>
       </ion-header>
-    </ion-content>
+
+      <!-- Contenido principal -->
+      <ion-content :fullscreen="true">
+          <ion-header collapse="condense">
+              <ion-toolbar>
+                  <ion-title size="large">Inventario</ion-title>
+              </ion-toolbar>
+          </ion-header>
+
+          <ion-input v-model="search_text" fill="outline" label-placement="floating"
+                    label="Nombre del producto" type="text">
+                </ion-input>
+                 <!-- Contenedor de categorías con scroll horizontal -->
+                 <div class="categorias-scroll">
+                    <button class="categoria-btn" v-for="(categoria, index) in Categorias" :key="index"
+                        :class="['categoria-btn', { 'active': categoriaSeleccionada === categoria }]"
+                        @click="toggleCategoria(categoria, $event)">
+                        {{ categoria }}
+                    </button>
+                </div>
+
+          <!-- Tabla de Inventario -->
+          <InventarioTabla />
+
+          <!-- Botón flotante para agregar productos -->
+          <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+              <ion-fab-button @click="openModal">
+                  <ion-icon :icon="addOutline" />
+              </ion-fab-button>
+          </ion-fab>
+
+          <!-- Modal para agregar producto -->
+          <ModalAgregarProducto :isOpen="modalAbierto" @cerrar="cerrarModal" />
+      </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar , IonFab, IonFabButton, IonIcon, IonInput} from '@ionic/vue';
+import InventarioTabla from '@/components/InventarioTabla.vue';
+import ModalAgregarProducto from '@/components/ModalAgregarNuevoProducto.vue';
+import { addOutline } from 'ionicons/icons';
+import { ref } from 'vue';
+import { useSearch } from "@/composables/useSearch";
 
-/// Debugging
-import { onIonViewDidEnter } from '@ionic/vue';
-import { inject } from 'vue';
+const { search_text, search_results } = useSearch();
 
-import {Producto, DatabaseService} from '@/services/DatabaseService';
+const modalAbierto = ref(false);
 
-let dbs: DatabaseService = new DatabaseService(inject('$sqlite'));
-let data: Producto[];
+const Categorias = ref(['Electrodomésticos', 'Electrónicos', 'Herramientas', 'Muebles', 'Ropa', 'Zapatos', 'Otros']);
+const openModal = () => {
+    modalAbierto.value = true;
+};
 
-onIonViewDidEnter(async () => {
-  await dbs.init();
-  data = await dbs.obtener_productos_por_texto("nombre1");
-  data = await dbs.obtener_producto_por_cod_barra("12374");
-  await dbs.añadir_producto({
-    nombre: "noooo",
-    precio: 666,
-    unidad_medida: "woa",
-    categorias: null,
-    foto:  null,
-    cod_barra: null,
-  } as Producto);
-  data = await dbs.obtener_productos();
-  console.log(data);
-});
-/// end Debugging
+const cerrarModal = () => {
+    modalAbierto.value = false;
+};
+
+const categoriaSeleccionada = ref(['']); // Categoría seleccionada
+
+const toggleCategoria = (categoria: string, event: Event) => {
+    if (categoriaSeleccionada.value.includes(categoria)) {
+        categoriaSeleccionada.value = ''; // Desactiva si ya está seleccionada
+    } else {
+        categoriaSeleccionada.value = categoria; // Activa si no está seleccionada
+    }
+};
 
 </script>
 
@@ -75,4 +104,73 @@ onIonViewDidEnter(async () => {
 #container a {
   text-decoration: none;
 }
+
+button {
+    background-color: transparent;
+    border: none;
+    color: var(--ion-color-primary);
+    cursor: pointer;
+}
+
+.categoria-btn {
+    flex: 0 0 auto;
+    margin: 10px;
+    color: white;
+    min-width: 80px;
+    max-width: none;
+    background-color: rgb(29, 28, 28);
+    padding: 9px;
+    text-overflow: clip;
+    border-radius: 10px;
+    overflow: visible;
+    border: 0.5px solid transparent; /* Se inicia sin borde */
+    transition: border-color 0.1s ease-in-out, background-color 0.7s ease-in-out;
+    /* Agregamos una transición suave */
+}
+
+.categoria-btn.active {
+    border-color: white;
+    background-color: var(--ion-color-primary);
+    color: white;
+}
+
+ion-input {
+    background-color: rgb(29, 28, 28);
+    --padding-start: 15px;
+    margin: 20px 7% 0px 7%;
+    width: 86%;
+}
+
+.categorias-scroll {
+    display: flex;
+    overflow-x: auto;
+    /* Permite el desplazamiento horizontal */
+    white-space: nowrap;
+    /* Evita que los botones se rompan en varias líneas */
+    padding: 10px;
+    gap: 10px;
+    /* Espaciado entre botones */
+    scrollbar-width: thin;
+    /* Reduce el tamaño de la barra de desplazamiento en Firefox */
+    -webkit-overflow-scrolling: touch;
+    /* Mejora el desplazamiento en dispositivos táctiles */
+
+    margin: 20px 7% 0px 7%;
+}
+
+/* Personaliza la barra de desplazamiento en Webkit (Chrome, Edge, Safari) */
+.categorias-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.categorias-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.categorias-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 </style>
+

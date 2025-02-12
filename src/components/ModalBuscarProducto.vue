@@ -44,10 +44,8 @@
 
 <script setup lang="ts">
 import { IonModal, IonContent, IonButton, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonCard, IonCardContent, IonGrid, IonRow, IonCol } from '@ionic/vue';
-import { defineProps, defineEmits } from 'vue';
 import { ref } from 'vue';
 import { useSearch } from "@/composables/useSearch";
-
 const { search_text, search_results } = useSearch();
 
 
@@ -56,7 +54,7 @@ const emit = defineEmits(['cerrar','agregar-producto']); // Definiendo los event
 
 const cerrarModal = () => {
     emit('cerrar'); // Emite el evento cuando se cierra el modal
-    categoriaSeleccionada.value = ''; // Desactiva la categoría seleccionada
+    categoriaSeleccionada.value = []; // Desactiva la categoría seleccionada
 };
 
 interface Producto {
@@ -65,20 +63,27 @@ interface Producto {
     precio: number;
 }
 
-const categoriaSeleccionada = ref<string>('');
+const categoriaSeleccionada = ref<string[]>([]); // Ahora es un array vacío
 
 const toggleCategoria = (categoria: string, event: Event) => {
-    if (categoriaSeleccionada.value === categoria) {
-        categoriaSeleccionada.value = ''; // Desactiva si ya está seleccionada
+    const index = categoriaSeleccionada.value.indexOf(categoria);
+
+    if (index !== -1) {
+        // Si ya está seleccionada, la eliminamos
+        categoriaSeleccionada.value.splice(index, 1);
     } else {
-        categoriaSeleccionada.value = categoria; // Activa si no está seleccionada
+        // Si no está seleccionada, la agregamos
+        categoriaSeleccionada.value.push(categoria);
+
+        // Desplazamos la vista hacia el botón seleccionado
         const target = event.currentTarget as HTMLElement;
         target.scrollIntoView({ behavior: "smooth", inline: "center" });
     }
+    console.log(categoriaSeleccionada.value);
 };
 
+
 const Productos = ref<Producto[]>([
-    { nombre: 'Coca Cola', stock: 10, precio: 2.5 },
     { nombre: 'Pepsi', stock: 5, precio: 2.0 },
     { nombre: 'Sprite', stock: 8, precio: 2.5 },
     { nombre: 'Fanta', stock: 3, precio: 2.0 },

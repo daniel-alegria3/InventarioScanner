@@ -8,7 +8,8 @@
             <ion-note>hi@ionicframework.com</ion-note>
 
             <ion-menu-toggle :auto-hide="false" v-for="(p, i) in appPages" :key="i">
-              <ion-item @click="selectedIndex = i" router-direction="root" :router-link="p.url" lines="none" :detail="false" class="hydrated" :class="{ selected: selectedIndex === i }">
+              <ion-item @click="selectedIndex = i" router-direction="root" :router-link="p.url" lines="none"
+                :detail="false" class="hydrated" :class="{ selected: selectedIndex === i }">
                 <ion-icon aria-hidden="true" slot="start" :ios="p.iosIcon" :md="p.mdIcon"></ion-icon>
                 <ion-label>{{ p.title }}</ion-label>
               </ion-item>
@@ -86,12 +87,12 @@ import { useState } from '@/composables/state';
 /* SQLite Global Variables*/
 
 // Only if you want to use the onProgressImport/Export events
-const {isJsonListeners, setIsJsonListeners} = useState(false);
-const {isModalOpen, setIsModalOpen} = useState(false);
-const {messageContent, setMessageContent} = useState("");
-provide('$isJsonListeners', {isJsonListeners, setIsJsonListeners});
-provide('$isModalOpen', {isModalOpen, setIsModalOpen});
-provide('$messageContent', {messageContent, setMessageContent});
+const { isJsonListeners, setIsJsonListeners } = useState(false);
+const { isModalOpen, setIsModalOpen } = useState(false);
+const { messageContent, setMessageContent } = useState("");
+provide('$isJsonListeners', { isJsonListeners, setIsJsonListeners });
+provide('$isModalOpen', { isModalOpen, setIsModalOpen });
+provide('$messageContent', { messageContent, setMessageContent });
 
 //[
 // const { isJsonListeners, setIsJsonListeners } = inject('$isJsonListeners');
@@ -101,25 +102,25 @@ provide('$messageContent', {messageContent, setMessageContent});
 
 //  Existing Connections Store
 const [existConn, setExistConn] = useState(false);
-provide('$existingConn', {existConn: existConn, setExistConn: setExistConn});
+provide('$existingConn', { existConn: existConn, setExistConn: setExistConn });
 
 const onProgressImport = async (progress: string) => {
-  if(isJsonListeners.value) {
-    if(!isModalOpen.value) setIsModalOpen(true);
+  if (isJsonListeners.value) {
+    if (!isModalOpen.value) setIsModalOpen(true);
     setMessageContent(
-        messageContent.value.concat(`${progress}\n`));
+      messageContent.value.concat(`${progress}\n`));
   }
 }
 const onProgressExport = async (progress: string) => {
-  if(isJsonListeners.value) {
-    if(!isModalOpen.value) setIsModalOpen(true);
+  if (isJsonListeners.value) {
+    if (!isModalOpen.value) setIsModalOpen(true);
     setMessageContent(
       messageContent.value.concat(`${progress}\n`));
   }
 }
 
 const app = getCurrentInstance();
-if( app != null) {
+if (app != null) {
   provide('$sqlite', useSQLite({
     onProgressImport,
     onProgressExport,
@@ -128,6 +129,10 @@ if( app != null) {
 </script>
 
 <style scoped>
+ion-menu {
+  max-width: 300px;
+}
+
 ion-menu ion-content {
   --background: var(--ion-item-background, var(--ion-background-color, #fff));
 }
