@@ -4,14 +4,20 @@ import { DatabaseService, Producto } from "@/services/DatabaseService";
 export function useSearch() {
   const db = new DatabaseService(inject('$sqlite'));
   const search_text = ref("");
+  const search_categories = ref([] as string[]);
   const search_results = ref([] as Producto[]);
 
   const search_query = async () => {
     if (search_text.value.trim() === "") {
-      search_results.value = []; // Clear search_results if search is empty
+      search_results.value = [];
       return;
     }
-    search_results.value = await db.obtener_productos_por_texto(search_text.value);
+    if (search_categories.value.length === 0) {
+      search_results.value = await db.obtener_productos_por_nombre(search_text.value);
+      return;
+    }
+
+    search_results.value = await db.obtener_productos_por_nombre_y_categorias(search_text.value, search_categories.value);
   };
 
   // Run search when component mounts
@@ -20,6 +26,6 @@ export function useSearch() {
   // Watch search_text and re-run search whenever it changes
   watch(search_text, search_query);
 
-  return { search_text, search_results };
+  return { search_text, search_categories, search_results };
 }
 

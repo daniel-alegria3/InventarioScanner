@@ -42,14 +42,13 @@ export class DatabaseService {
         return this.array_to_producto(res.values as any[]);
     }
 
-    async obtener_productos_por_texto(texto: string): Promise<Producto[]> {
+    async obtener_productos_por_nombre(texto: string): Promise<Producto[]> {
         await this.db.open();
-        let texto_buscar = `%${texto}%`;
         const res = await this.db.query(`
             SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
             FROM producto
-            WHERE nombre LIKE ? OR categorias LIKE ?;`,
-            [texto_buscar, texto_buscar]
+            WHERE nombre LIKE;`,
+            [`%${texto}%`]
         );
         await this.db.close();
         return this.array_to_producto(res.values as any[]);
