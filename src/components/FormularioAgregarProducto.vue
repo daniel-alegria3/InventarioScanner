@@ -1,5 +1,4 @@
 <template>
-  <ion-modal>
     <ion-page>
       <ion-header :translucent="true">
         <ion-toolbar>
@@ -63,7 +62,6 @@
         </ion-grid>
       </ion-content>
     </ion-page>
-  </ion-modal>
 </template>
 
 <script setup lang="ts">
