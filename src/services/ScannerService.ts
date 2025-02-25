@@ -1,3 +1,5 @@
+// NOTA: este modulo no se usara en las vistas, solo esta de referencia
+
 import {
   Barcode,
   BarcodeFormat,
