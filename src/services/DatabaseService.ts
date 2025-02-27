@@ -137,19 +137,22 @@ export class DatabaseService {
     }
 
     producto_to_array(producto: Producto): any[] {
-        let cats;
+        let cats: string|null = "";
         let categorias = producto.categorias ?? null;
         if (categorias) {
             cats = categorias.join(",");
         }
+        if (cats.trim() === "") {
+            cats = null;
+        }
         return [
             producto.nombre,
             producto.precio,
-            producto.unidad_medida ?? null,
+            (producto.unidad_medida ?? "").trim() === "" ? null : producto.unidad_medida,
             cats,
-            producto.foto ?? null,
-            producto.cod_barra ?? null,
-            producto.stock ?? null,
+            (producto.foto ?? "").trim() === "" ? null : producto.foto,
+            (producto.cod_barra ?? "").trim() === "" ? null : producto.cod_barra,
+            Number.isInteger(producto.stock ?? null) ? producto.stock : null,
         ];
     }
 
