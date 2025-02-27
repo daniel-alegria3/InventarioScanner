@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import {
   IonHeader,
   IonToolbar,
@@ -55,14 +55,12 @@ export interface CodigoBarra {
     tipo_valor: BarcodeValueType;
 }
 
-const props = defineProps<{
-}>();
 const props = withDefaults(defineProps<{
   lensFacing?: LensFacing;
   formats?: BarcodeFormat[];
   barcode?: CodigoBarra;
 }>(), {
-  lensFacing: LensFacing.Back;
+  lensFacing: LensFacing.Back,
   formats: [
     BarcodeFormat.Aztec,
     BarcodeFormat.Codabar,
@@ -77,7 +75,7 @@ const props = withDefaults(defineProps<{
     BarcodeFormat.QrCode,
     BarcodeFormat.UpcA,
     BarcodeFormat.UpcE,
-  ];
+  ]
 });
 
 const emit = defineEmits(['update:barcode']); // Enables 'v-model' for barcode
@@ -88,21 +86,13 @@ const isTorchAvailable = ref(false);
 const minZoomRatio = ref<number | undefined>(undefined);
 const maxZoomRatio = ref<number | undefined>(undefined);
 
-onMounted(async () => {
-  const torchResult = await Torch.isAvailable();
-  isTorchAvailable.value = torchResult.available;
-  setTimeout(startScan, 500);
-});
-
-onBeforeUnmount(stopScan);
-
 const startScan = async () => {
   // Hide everything behind the modal (see `src/theme/variables.scss`)
   // document.querySelector('body')?.classList.add('barcode-scanning-active');
   document.body.classList.add('barcode-scanning-active');
 
   const options: StartScanOptions = {
-    formats: props.formats;
+    formats: props.formats,
     lensFacing: props.lensFacing,
     videoElement: Capacitor.getPlatform() === 'web' ? videoElement.value ?? undefined : undefined,
   };
@@ -191,9 +181,17 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
-const updateBarcode = (new: CodigoBarra) => {
-  emit('update:barcode', new);
+const updateBarcode = (new_barcode: CodigoBarra) => {
+  emit('update:barcode', new_barcode);
 };
+
+
+onMounted(async () => {
+  const torchResult = await Torch.isAvailable();
+  isTorchAvailable.value = torchResult.available;
+});
+
+onBeforeUnmount(stopScan);
 
 </script>
 
