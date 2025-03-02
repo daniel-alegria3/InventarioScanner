@@ -9,19 +9,23 @@
                 <ion-grid>
                     <!-- Encabezados de la tabla -->
                     <ion-row class="header">
-                        <ion-col size="3">Producto</ion-col>
+                        <ion-col size="5">Producto</ion-col>
                         <ion-col size="3">Stock</ion-col>
                         <ion-col size="3">Precio/U</ion-col>
+                        <ion-col size="1"></ion-col>
                     </ion-row>
 
                     <!-- Filas dinámicas -->
                     <ion-row v-for="(producto, index) in Productos" :key="index">
-                        <ion-col size="3">{{ producto.nombre }}</ion-col>
+                        <ion-col size="5">{{ producto.nombre }}</ion-col>
                         <ion-col size="3">{{ producto.stock }}</ion-col>
                         <ion-col size="3">S/ {{ producto.precio }}</ion-col>
-                        <ion-col size="3">
+                        <ion-col size="1" class="iconos">
                             <div class="botonDelete" @click="deleteThis(producto.id, producto.nombre)">
                                 <ion-icon :icon="closeCircleOutline"></ion-icon>
+                            </div>
+                            <div class="botonModificar" @click="ModifyThis(producto.id)">
+                                <ion-icon :icon="createOutline"></ion-icon>
                             </div>
                         </ion-col>
                     </ion-row>
@@ -29,21 +33,49 @@
             </ion-card-content>
         </ion-card>
     </ion-content>
+    <ion-modal :is-open="isOpen" @didDismiss="closeModal">
+        <ion-header>
+            <ion-toolbar>
+                <ion-title>Editar Producto</ion-title>
+            </ion-toolbar>
+        </ion-header>
+        <ion-content>
+            <ion-card>
+                <ion-input v-model="productoEditado.nombre" fill="outline" label-placement="floating"
+                    label="Nombre del producto" type="text"></ion-input>
+                <ion-input type="number" v-model="productoEditado.stock" fill="outline" label-placement="floating"
+                label="Stock del producto" ></ion-input>
+                <ion-input type="number" v-model="productoEditado.precio" fill="outline" label-placement="floating"
+                label="Precio del producto" ></ion-input>
+                <ion-button expand="full" @click="guardarCambios">Guardar</ion-button>
+            </ion-card>
+        </ion-content>
+    </ion-modal>
+
 </template>
 
 <script setup lang="ts">
 import {
     IonCard,
     IonContent,
+    IonHeader,
     IonCardContent,
     IonGrid,
     IonRow,
     IonCol,
     IonCardTitle,
     IonIcon,
+    IonInput,
+    IonButton,
+    IonModal,
+    IonToolbar,
+    IonTitle,
     alertController
 } from '@ionic/vue';
-import { closeCircleOutline } from 'ionicons/icons';
+import {
+    closeCircleOutline
+    , createOutline
+} from 'ionicons/icons';
 
 import { ref } from 'vue';
 
@@ -88,6 +120,36 @@ const deleteThis = async (id: number, nombre: string): Promise<void> => {
     (await alert).present();
 
 };
+
+const isOpen = ref(false);
+const productoEditado = ref({ id: 0, nombre: '', stock: 0, precio: 0 });
+
+const ModifyThis = (id: number) => {
+    const producto = Productos.value.find(p => p.id === id);
+    if (producto) {
+        productoEditado.value = { ...producto }; // Copia los datos
+        isOpen.value = true;
+    }
+};
+
+const closeModal = () => {
+    isOpen.value = false;
+};
+
+const guardarCambios = async () => {
+    try {
+        // Actualizar el producto en la base de datos
+        // actualizarProducto(productoEditado.value);
+        // Actualizar el producto en la lista del frontend
+        const index = Productos.value.findIndex(p => p.id === productoEditado.value.id);
+        if (index !== -1) Productos.value[index] = { ...productoEditado.value };
+
+        isOpen.value = false;
+    } catch (error) {
+        console.error('Error al actualizar:', error);
+    }
+};
+
 </script>
 
 
@@ -97,8 +159,10 @@ const deleteThis = async (id: number, nombre: string): Promise<void> => {
     min-height: 500px;
 }
 
-.botonDelete {
+.botonDelete,
+.botonModificar {
     cursor: pointer;
+    margin: 0px 10px;
 }
 
 ion-row.header {
@@ -127,6 +191,7 @@ ion-icon {
     font-size: 1.5em;
     padding: 0px;
 }
+
 .btnAgregarStock {
     background-color: var(--ion-color-primary);
     color: white;
@@ -139,5 +204,12 @@ ion-icon {
     padding: 25px;
     display: flex;
     justify-content: space-between;
+}
+
+ion-input {
+    margin: 20px 0;
+}
+.iconos {
+    display: flex;
 }
 </style>
