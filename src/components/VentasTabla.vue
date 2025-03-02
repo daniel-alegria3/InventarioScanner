@@ -23,7 +23,9 @@
                             </div>
                         </ion-col>
                         <ion-col size="5">{{ producto.nombre }}</ion-col>
-                        <ion-col size="2">{{ producto.cantidad }}</ion-col>
+                        <ion-col size="2">
+                            <input type="number" v-model="producto.cantidad" class="inputCantidad">
+                        </ion-col>
                         <ion-col size="2">S/ {{ producto.precio }}</ion-col>
                         <ion-col size="2">S/ {{ (producto.cantidad * producto.precio).toFixed(2) }}</ion-col>
                         
@@ -169,4 +171,13 @@ ion-icon {
     font-size: 1.5em;
     padding: 5px;
 }
+
+.inputCantidad {
+    width: 50px;
+    text-align: center;
+    border: 1px solid ;
+    border-radius: 8px;
+    background-color: transparent;
+}
+
 </style>
