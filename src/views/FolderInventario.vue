@@ -24,8 +24,8 @@
                  <!-- Contenedor de categorías con scroll horizontal -->
                  <div class="categorias-scroll">
                     <button class="categoria-btn" v-for="(categoria, index) in Categorias" :key="index"
-                        :class="['categoria-btn', { 'active': categoriaSeleccionada === categoria }]"
-                        @click="toggleCategoria(categoria, $event)">
+                        :class="['categoria-btn', { 'active': categoriasSeleccionadas.includes(categoria) }]"
+                        @click="toggleCategoria(categoria)">
                         {{ categoria }}
                     </button>
                 </div>
@@ -58,7 +58,7 @@ const { search_text, search_results } = useSearch();
 
 const modalAbierto = ref(false);
 
-const Categorias = ref(['Electrodomésticos', 'Electrónicos', 'Herramientas', 'Muebles', 'Ropa', 'Zapatos', 'Otros']);
+const Categorias = ref(['Electrodomésticos', 'Electrónicos', 'Herramientas', 'Muebles', 'Ropa', 'Zapatos', 'Casacas', 'Polos', 'Chaquetas','Pantalones']);
 const openModal = () => {
     modalAbierto.value = true;
 };
@@ -67,14 +67,19 @@ const cerrarModal = () => {
     modalAbierto.value = false;
 };
 
-const categoriaSeleccionada = ref(['']); // Categoría seleccionada
+const categoriasSeleccionadas = ref<string[]>([]); // Ahora es un array vacío
 
-const toggleCategoria = (categoria: string, event: Event) => {
-    if (categoriaSeleccionada.value.includes(categoria)) {
-        categoriaSeleccionada.value = ''; // Desactiva si ya está seleccionada
+const toggleCategoria = (categoria: string) => {
+    const index = categoriasSeleccionadas.value.indexOf(categoria);
+
+    if (index !== -1) {
+        // Si ya está seleccionada, la eliminamos
+        categoriasSeleccionadas.value.splice(index, 1);
     } else {
-        categoriaSeleccionada.value = categoria; // Activa si no está seleccionada
+        // Si no está seleccionada, la agregamos
+        categoriasSeleccionadas.value.push(categoria);
     }
+    console.log(categoriasSeleccionadas.value);
 };
 
 </script>

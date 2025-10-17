@@ -15,6 +15,15 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import ('../views/FolderInventario.vue')
   },
 
+  {
+    path: '/folder/Inventario/AgregarExistencias',
+    component: () => import ('../views/InventarioAgregarStock.vue')
+  },
+
+  {
+    path: '/folder/Test',
+    component: () => import ('../views/FolderTest.vue')
+  }
 ]
 
 const router = createRouter({

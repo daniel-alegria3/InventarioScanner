@@ -1,9 +1,10 @@
 <template>
     <ion-content>
         <ion-card class="Productos">
-            <ion-card-header>
+            <div class="ion-card-header">
                 <ion-card-title>Tabla de Productos</ion-card-title>
-            </ion-card-header>
+                <a class="btnAgregarStock" href="/folder/Inventario/AgregarExistencias">Agregar Existencias</a>
+            </div>
             <ion-card-content>
                 <ion-grid>
                     <!-- Encabezados de la tabla -->
@@ -38,7 +39,6 @@ import {
     IonGrid,
     IonRow,
     IonCol,
-    IonCardHeader,
     IonCardTitle,
     IonIcon,
     alertController
@@ -126,5 +126,18 @@ ion-icon {
     background-color: transparent;
     font-size: 1.5em;
     padding: 0px;
+}
+.btnAgregarStock {
+    background-color: var(--ion-color-primary);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.ion-card-header {
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
 }
 </style>

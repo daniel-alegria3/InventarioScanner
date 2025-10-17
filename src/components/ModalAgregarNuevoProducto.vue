@@ -24,17 +24,24 @@
                                             label="Precio (S/)" type="number"></ion-input>
                                     </ion-col>
                                     <ion-col>
+                                        <ion-select v-model="form_data.categories" fill="outline" label="Categorías"
+                                            :multiple="true" >
+                                            <ion-select-option v-for="(c, i) in CATEGORIES" :key="i" :value="c">
+                                                {{ c }}
+                                            </ion-select-option>
+                                        </ion-select>
+                                    </ion-col>
+                                </ion-row>
+                                <ion-row>
+                                    <ion-col>
                                         <ion-input v-model="form_data.quantity" fill="outline"
                                             label-placement="floating" label="Cantidad" type="number"></ion-input>
                                     </ion-col>
-                                </ion-row>
-
-                                <ion-row>
                                     <ion-col>
-                                        <ion-select v-model="form_data.categories" fill="outline" label="Categorías"
-                                            :multiple="true" placeholder="Seleccionar">
-                                            <ion-select-option v-for="(c, i) in CATEGORIES" :key="i" :value="c">
-                                                {{ c }}
+                                        <ion-select v-model="form_data.unidad_medida" fill="outline" label="Unidad de medida"
+                                            :multiple="true" >
+                                            <ion-select-option v-for="(u, i) in unidadMedidas" :key="i" :value="u">
+                                                {{ u }}
                                             </ion-select-option>
                                         </ion-select>
                                     </ion-col>
@@ -52,6 +59,8 @@
                             </form>
                         </ion-card-content>
                     </ion-card>
+                    <ion-button @click="cerrarModal" class="botonCerrar">Cerrar</ion-button>
+
                 </ion-grid>
             </ion-content>
         </ion-page>
@@ -78,10 +87,10 @@ import {
     alertController
 } from '@ionic/vue';
 import { ref, computed, toRaw } from 'vue';
-import { Producto } from '@/services/DatabaseService';
+// import { Producto } from '@/services/DatabaseService';
 const emit = defineEmits(['cerrar']); // Definiendo los eventos 'cerrar' y 'agregar-producto'
 const CATEGORIES = ref<string[]>(['Gaseosas', 'Dulces', 'Galletas', 'Snacks', 'Cervezas', 'Licores']);
-const unitMedidas = ref<string[]>(['Paquete12', 'Paquete10', 'Kilos', 'Gramos']);
+const unidadMedidas = ref<string[]>(['Paquete12', 'Paquete10', 'Kilos', 'Gramos']);
 const props = defineProps<{ isOpen: boolean }>(); // Definiendo la prop 'isOpen'
 const cerrarModal = () => {
     emit('cerrar'); // Emite el evento cuando se cierra el modal
@@ -92,21 +101,26 @@ interface FormData {
     price: string;
     quantity: string;
     categories: string[];
+    unidad_medida: string;
 }
 
-const Formulario = ref<Producto>({
-    nombre: '',
-    precio: 0,
-    cantidad: '',
-    unidad_medida: '',
-    categories: [],
-});
+// const Formulario = ref<Producto>({
+//     id: 0,
+//     nombre: '',
+//     precio: 0,
+//     unidad_medida: '',
+//     categorias: [],
+//     stock: 0,
+//     foto: "",
+//     cod_barra: ""
+// });
 
 const default_form: FormData = {
     name: "",
     price: "",
     quantity: "",
     categories: [],
+    unidad_medida: "",
 };
 
 const form_data = ref<FormData>({ ...default_form });
@@ -160,7 +174,13 @@ button {
     color: var(--ion-color-primary);
     cursor: pointer;
 }
-
+.botonCerrar {
+    margin-top: 10px;
+    border-radius: 8px;
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
 .categoria-btn {
     flex: 0 0 auto;
     margin: 10px;

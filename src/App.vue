@@ -69,6 +69,12 @@ const appPages = [
     url: '/folder/Inventario',
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp,
+  },
+  {
+    title: 'test',
+    url: '/folder/test',
+    iosIcon: paperPlaneOutline,
+    mdIcon: paperPlaneSharp,
   }
 ];
 const labels = ['Family'];

@@ -8,18 +8,19 @@
             </ion-header>
 
             <ion-content class="ion-padding">
-                <ion-input v-model="search_text" fill="outline" label-placement="floating"
-                    label="Nombre del producto" type="text">
+                <ion-input v-model="search_text" fill="outline" label-placement="floating" label="Nombre del producto"
+                    type="text">
                 </ion-input>
                 <ion-button @click="cerrarModal" class="botonCerrar">Cerrar</ion-button>
-                 <!-- Contenedor de categorías con scroll horizontal -->
-                 <div class="categorias-scroll">
+                <!-- Contenedor de categorías con scroll horizontal -->
+                <div class="categorias-scroll">
                     <button class="categoria-btn" v-for="(categoria, index) in Categorias" :key="index"
-                        :class="['categoria-btn', { 'active': categoriaSeleccionada === categoria }]"
+                        :class="['categoria-btn', { 'active': categoriaSeleccionada.includes(categoria) }]"
                         @click="toggleCategoria(categoria, $event)">
                         {{ categoria }}
                     </button>
                 </div>
+
                 <ion-grid>
                     <ion-card class="Mostrar">
                         <ion-card-content>
@@ -43,14 +44,14 @@
 </template>
 
 <script setup lang="ts">
-import { IonModal, IonContent, IonButton, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonCard, IonCardContent, IonGrid, IonRow, IonCol } from '@ionic/vue';
+import { IonModal, IonContent, IonButton, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonCard, IonCardContent, IonGrid, IonRow, IonCol, alertController } from '@ionic/vue';
 import { ref } from 'vue';
 import { useSearch } from "@/composables/useSearch";
 const { search_text, search_results } = useSearch();
 
 
 const props = defineProps<{ isOpen: boolean }>(); // Definiendo la prop 'isOpen'
-const emit = defineEmits(['cerrar','agregar-producto']); // Definiendo los eventos 'cerrar' y 'agregar-producto'
+const emit = defineEmits(['cerrar', 'agregar-producto']); // Definiendo los eventos 'cerrar' y 'agregar-producto'
 
 const cerrarModal = () => {
     emit('cerrar'); // Emite el evento cuando se cierra el modal
@@ -87,18 +88,58 @@ const Productos = ref<Producto[]>([
     { nombre: 'Pepsi', stock: 5, precio: 2.0 },
     { nombre: 'Sprite', stock: 8, precio: 2.5 },
     { nombre: 'Fanta', stock: 3, precio: 2.0 },
+    { nombre: 'Galletas', stock: 10, precio: 1.5 },
+    { nombre: 'Chocolates', stock: 6, precio: 1.0 },
+    { nombre: 'Cerveza', stock: 12, precio: 3.0 },
+    { nombre: 'Vodka', stock: 2, precio: 5.0 },
+    { nombre: 'Ron', stock: 4, precio: 4.0 },
+    { nombre: 'Whisky', stock: 3, precio: 6.0 },
+    { nombre: 'Tequila', stock: 5, precio: 3.5 },
+    { nombre: 'Vino', stock: 7, precio: 2.5 },
+    { nombre: 'Coca-Cola', stock: 6, precio: 2.0 },
+    { nombre: 'Pepsi', stock: 5, precio: 2.0 },
+    { nombre: 'Sprite', stock: 8, precio: 2.5 },
+    { nombre: 'Fanta', stock: 3, precio: 2.0 },
+    { nombre: 'Galletas', stock: 10, precio: 1.5 },
+    { nombre: 'Chocolates', stock: 6, precio: 1.0 },
+    { nombre: 'Cerveza', stock: 12, precio: 3.0 },
+    { nombre: 'Vodka', stock: 2, precio: 5.0 },
+    { nombre: 'Ron', stock: 4, precio: 4.0 },
+    { nombre: 'Whisky', stock: 3, precio: 6.0 },
+    { nombre: 'Tequila', stock: 5, precio: 3.5 },
+    { nombre: 'Vino', stock: 7, precio: 2.5 },
+    { nombre: 'Coca-Cola', stock: 6, precio: 2.0 },
+    { nombre: 'Pepsi', stock: 5, precio: 2.0 },
+    { nombre: 'Sprite', stock: 8, precio: 2.5 },
+    { nombre: 'Fanta', stock: 3, precio: 2.0 },
+    { nombre: 'Galletas', stock: 10, precio: 1.5 },
 ]);
 const Categorias = ref<string[]>(['Gaseosas', 'Dulces', 'Galletas', 'Snacks', 'Cervezas', 'Licores']);
 
-const addThis = (nombre: string, precio: number): void => {
+const addThis = async (nombre: string, precio: number): Promise<void> => {
     const cantidad = 1;
     const totalParcial = 0;
-    emit('agregar-producto',{nombre, cantidad, precio, totalParcial}); // Emite el evento 'agregar-producto' con los datos del producto
+    const alert = await alertController.create({
+        header: 'Agregar producto',
+        message: `Se agrego ${nombre}.`,
+        buttons: ['OK'],
+    });
+    alert.present();
+    emit('agregar-producto', { nombre, cantidad, precio, totalParcial }); // Emite el evento 'agregar-producto' con los datos del producto
 }
 
 </script>
 
 <style scoped>
+
+.Mostrar {
+    margin: 20px 7% 0px 7%;
+    min-height: 200px;
+    max-height: 280px;
+    scroll-behavior: smooth;
+    overflow-y: auto;
+}
+
 ion-row.headerProductos {
     font-weight: bold;
     background-color: var(--ion-color-light);
@@ -133,7 +174,8 @@ button {
     text-overflow: clip;
     border-radius: 10px;
     overflow: visible;
-    border: 0.5px solid transparent; /* Se inicia sin borde */
+    border: 0.5px solid transparent;
+    /* Se inicia sin borde */
     transition: border-color 0.1s ease-in-out, background-color 0.7s ease-in-out;
     /* Agregamos una transición suave */
 }

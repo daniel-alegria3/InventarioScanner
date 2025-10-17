@@ -8,18 +8,25 @@
                 <ion-grid>
                     <!-- Encabezados de la tabla -->
                     <ion-row class="header">
-                        <ion-col size="3">Producto</ion-col>
-                        <ion-col size="3">Cantidad</ion-col>
-                        <ion-col size="3">Precio/U</ion-col>
-                        <ion-col size="3">Total/Parcial</ion-col>
+                        <ion-col size="1"></ion-col>
+                        <ion-col size="5">Producto</ion-col>
+                        <ion-col size="2">Cantidad</ion-col>
+                        <ion-col size="2">Precio/U</ion-col>
+                        <ion-col size="2`">Total/Parcial</ion-col>
                     </ion-row>
 
                     <!-- Filas dinámicas -->
                     <ion-row v-for="(producto, index) in Productos" :key="index">
-                        <ion-col size="3">{{ producto.nombre }}</ion-col>
-                        <ion-col size="3">{{ producto.cantidad }}</ion-col>
-                        <ion-col size="3">S/ {{ producto.precio }}</ion-col>
-                        <ion-col size="3">S/ {{ producto.cantidad * producto.precio }}</ion-col>
+                        <ion-col size="1">
+                            <div class="botonDelete" @click="deleteThis(producto.id, producto.nombre)">
+                                <ion-icon :icon="closeCircleOutline"></ion-icon>
+                            </div>
+                        </ion-col>
+                        <ion-col size="5">{{ producto.nombre }}</ion-col>
+                        <ion-col size="2">{{ producto.cantidad }}</ion-col>
+                        <ion-col size="2">S/ {{ producto.precio }}</ion-col>
+                        <ion-col size="2">S/ {{ (producto.cantidad * producto.precio).toFixed(2) }}</ion-col>
+                        
                     </ion-row>
                 </ion-grid>
             </ion-card-content>
@@ -28,7 +35,7 @@
             <ion-card-content>
                 <h1 class="TotalPrecio">
                     <span>Total: </span>
-                    <span>S/ {{ Total }}</span>
+                    <span>S/ {{ Total.toFixed(2) }}</span>
                 </h1>
             </ion-card-content>
         </ion-card>
@@ -52,19 +59,21 @@ import {
     IonCardHeader,
     IonCardTitle,
     IonButton,
-    IonIcon
+    IonIcon,
+    alertController
 } from '@ionic/vue';
 import {
     cashSharp,
-    cash
+    cash,
+    closeCircleOutline
 } from 'ionicons/icons';
 import { ref, watch } from 'vue';
 const Productos = ref([
-    { nombre: 'Gaseosa ORO', cantidad: 1, precio: 1.5, total: 0 },
-    { nombre: 'Galleta', cantidad: 2, precio: 0.80, total: 0 },
-    { nombre: 'Pastel', cantidad: 3, precio: 1.0, total: 0 },
-    { nombre: 'Chocolate', cantidad: 4, precio: 0.50, total: 0 },
-    { nombre: 'Caramelo', cantidad: 5, precio: 0.20, total: 0 },
+    {id:1, nombre: 'Gaseosa ORO', cantidad: 1, precio: 1.5, total: 0 },
+    {id:2, nombre: 'Galleta', cantidad: 2, precio: 0.80, total: 0 },
+    {id:3, nombre: 'Pastel', cantidad: 3, precio: 1.0, total: 0 },
+    {id:4, nombre: 'Chocolate', cantidad: 4, precio: 0.50, total: 0 },
+    {id:5, nombre: 'Caramelo', cantidad: 5, precio: 0.20, total: 0 },
 ]);
 const Total = ref(0);
 
@@ -79,12 +88,39 @@ const cancelar = () => {
     Productos.value = [];
     Total.value = 0;
 }
-const props = defineProps<{ productoSeleccionado: { nombre: string; cantidad: number; precio: number; total: number }[] }>();
+const props = defineProps<{ productoSeleccionado: { id: number; nombre: string; cantidad: number; precio: number; total: number }[] }>();
 
 // Detectar cambios y mostrar en consola
 watch(() => props.productoSeleccionado, (newVal) => {
     Productos.value.push(...newVal);
 }, { deep: true });
+
+const deleteThis = async (id: number, nombre: string): Promise<void> => {
+    const alert = await alertController.create({
+        header: 'Eliminar Producto',
+        message: '¿Estás seguro de eliminar ' + nombre + ' ?',
+        buttons: [
+            {
+                text: 'Cancelar',
+                role: 'cancel',
+            },
+            {
+                text: 'Eliminar',
+                handler: () => {
+                    //llamar a una funcion que eliminara el producto de la base de datos
+                    //eliminarProducto(id);
+
+                    //Solo se eliminara de la lista de productos
+                    const index = Productos.value.findIndex((producto) => producto.id === id);
+                    Productos.value.splice(index, 1);
+                },
+            },
+        ],
+    });
+
+    (await alert).present();
+
+};
 </script>
 
 
@@ -118,7 +154,7 @@ ion-row:nth-child(even) {
     display: flex;
     justify-content: space-between;
     /* Espacio entre el texto y el total */
-    padding: 0px 10% 0px 0px;
+    padding: 0px 4% 0px 0px;
     font-size: 1.5em;
     font-weight: bold;
 
