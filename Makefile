@@ -1,7 +1,7 @@
 phone:
 	ionic cap sync android
 	./android/gradlew assembleDebug -p ./android/
-	adb install -r ./android/app/build/outputs/apk/debug/app-debug.apk
+	adb install ./android/app/build/outputs/apk/debug/app-debug.apk
 
 sqlite:
 	# npm install @capacitor/core @capacitor/cli

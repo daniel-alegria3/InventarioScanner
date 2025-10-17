@@ -46,7 +46,6 @@ import {
   IonRouterOutlet,
   IonSplitPane,
 } from '@ionic/vue';
-import { ref, provide } from 'vue';
 import {
   bookmarkOutline,
   bookmarkSharp,
@@ -55,6 +54,7 @@ import {
   paperPlaneOutline,
   paperPlaneSharp,
 } from 'ionicons/icons';
+import { ref, watch, onMounted, provide } from 'vue';
 
 const selectedIndex = ref(0);
 const appPages = [
@@ -84,6 +84,26 @@ const path = window.location.pathname.split('folder/')[1];
 if (path !== undefined) {
   selectedIndex.value = appPages.findIndex((page) => page.title.toLowerCase() === path.toLowerCase());
 }
+
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
+onMounted(async () => {
+  // Control the color of the status bar on Android
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const themeColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--ion-toolbar-background')
+        .trim();
+      if (themeColor) {
+        await StatusBar.setStyle({ style: Style.Default });
+        await StatusBar.setBackgroundColor({ color: themeColor });
+        await StatusBar.setOverlaysWebView({ overlay: false });
+      }
+    }
+  } catch (err) {
+    console.log(`StatusBar initialization error: ${err}`);
+  }
+});
 
 // Sqlite
 import { getCurrentInstance } from 'vue';

@@ -1,5 +1,5 @@
-import { createApp, provide } from 'vue'
-import App from './App.vue'
+import { createApp, provide } from 'vue';
+import App from './App.vue';
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
@@ -35,7 +35,7 @@ import '@ionic/vue/css/palettes/dark.system.css';
 import './theme/variables.css';
 
 /* SQLite imports */
-import { defineCustomElements as jeepSqlite } from "jeep-sqlite/loader";
+import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { db_inventario_schema } from '@/utils/sqlite-schemas';
@@ -44,15 +44,12 @@ jeepSqlite(window);
 
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
-  const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite)
+  const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
 
-  const app = createApp(App)
-    .use(IonicVue)
-    .use(router);
-
+  const app = createApp(App).use(IonicVue).use(router);
 
   try {
-    if(platform === "web") {
+    if (platform === 'web') {
       // Create the 'jeep-sqlite' Stencil component
       const jeepSqlite = document.createElement('jeep-sqlite');
       document.body.appendChild(jeepSqlite);
@@ -63,11 +60,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // initialize database schema
     const result = await sqlite.isJsonValid(JSON.stringify(db_inventario_schema));
-    if(!result.result) {
+    if (!result.result) {
       throw new Error(`isJsonValid: "db_inventario_schema" is not valid`);
     }
     const resJson = await sqlite.importFromJson(JSON.stringify(db_inventario_schema));
-    if(resJson.changes && resJson.changes.changes && resJson.changes.changes < 0) {
+    if (resJson.changes && resJson.changes.changes && resJson.changes.changes < 0) {
       throw new Error(`importFromJson: "full" failed`);
     }
 
@@ -76,7 +73,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   } catch (err) {
     console.log(`Error: ${err}`);
-    throw new Error(`Error: ${err}`)
+    throw new Error(`Error: ${err}`);
   }
 });
-

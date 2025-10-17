@@ -5,29 +5,34 @@ const config: CapacitorConfig = {
   appName: 'InventarioScanner',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
   },
   plugins: {
+    StatusBar: {
+      overlaysWebView: true,
+      // style: 'DEFAULT',
+      // backgroundColor: '#ffffffff',
+    },
     CapacitorSQLite: {
       iosDatabaseLocation: 'Library/InventarioScanner',
       iosIsEncryption: true,
       iosKeychainPrefix: 'inventory-scanner',
       iosBiometric: {
         biometricAuth: false,
-        biometricTitle : "Biometric login for capacitor sqlite"
+        biometricTitle: 'Biometric login for capacitor sqlite',
       },
-    androidIsEncryption: true,
-    androidBiometric: {
-      biometricAuth : false,
-      biometricTitle : "Biometric login for capacitor sqlite",
-        biometricSubTitle : "Log in using your biometric"
+      androidIsEncryption: true,
+      androidBiometric: {
+        biometricAuth: false,
+        biometricTitle: 'Biometric login for capacitor sqlite',
+        biometricSubTitle: 'Log in using your biometric',
+      },
+      electronIsEncryption: true,
+      electronWindowsLocation: 'C:\\ProgramData\\InventarioScanner',
+      electronMacLocation: '/Volumes/Development_Lacie/Development/InventarioScanner',
+      electronLinuxLocation: '.local/share/InventarioScanner',
     },
-    electronIsEncryption: true,
-    electronWindowsLocation: "C:\\ProgramData\\InventarioScanner",
-    electronMacLocation: "/Volumes/Development_Lacie/Development/InventarioScanner",
-    electronLinuxLocation: ".local/share/InventarioScanner"
-    }
-  }
+  },
 };
 
 export default config;
