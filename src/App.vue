@@ -8,9 +8,19 @@
             <ion-note>hi@ionicframework.com</ion-note>
 
             <ion-menu-toggle :auto-hide="false" v-for="(p, i) in appPages" :key="i">
-              <ion-item @click="selectedIndex = i" router-direction="root" :router-link="p.url" lines="none"
-                :detail="false" class="hydrated" :class="{ selected: selectedIndex === i }">
-                <ion-icon aria-hidden="true" slot="start" :ios="p.iosIcon" :md="p.mdIcon"></ion-icon>
+              <ion-item
+                @click="ionRouter.navigate(p.url, 'root', 'replace')"
+                lines="none"
+                :detail="false"
+                class="hydrated"
+                :class="{ selected: selectedIndex === i }"
+              >
+                <ion-icon
+                  aria-hidden="true"
+                  slot="start"
+                  :ios="p.iosIcon"
+                  :md="p.mdIcon"
+                ></ion-icon>
                 <ion-label>{{ p.title }}</ion-label>
               </ion-item>
             </ion-menu-toggle>
@@ -20,7 +30,12 @@
             <ion-list-header>Labels</ion-list-header>
 
             <ion-item v-for="(label, index) in labels" lines="none" :key="index">
-              <ion-icon aria-hidden="true" slot="start" :ios="bookmarkOutline" :md="bookmarkSharp"></ion-icon>
+              <ion-icon
+                aria-hidden="true"
+                slot="start"
+                :ios="bookmarkOutline"
+                :md="bookmarkSharp"
+              ></ion-icon>
               <ion-label>{{ label }}</ion-label>
             </ion-item>
           </ion-list>
@@ -53,37 +68,51 @@ import {
   mailSharp,
   paperPlaneOutline,
   paperPlaneSharp,
+  telescopeOutline,
+  telescopeSharp,
 } from 'ionicons/icons';
+import { useIonRouter } from '@ionic/vue';
+import { useRoute } from 'vue-router';
 import { ref, watch, onMounted, provide } from 'vue';
+
+const route = useRoute();
+const ionRouter = useIonRouter();
 
 const selectedIndex = ref(0);
 const appPages = [
   {
     title: 'Venta',
-    url: '/folder/Venta',
+    url: '/venta',
     iosIcon: mailOutline,
     mdIcon: mailSharp,
   },
   {
     title: 'Inventario',
-    url: '/folder/Inventario',
+    url: '/inventario',
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp,
   },
   {
     title: 'test',
-    url: '/folder/test',
-    iosIcon: paperPlaneOutline,
-    mdIcon: paperPlaneSharp,
-  }
+    url: '/barcode-scanner-test',
+    iosIcon: telescopeOutline,
+    mdIcon: telescopeSharp,
+  },
 ];
 const labels = ['Family'];
 
-
-const path = window.location.pathname.split('folder/')[1];
-if (path !== undefined) {
-  selectedIndex.value = appPages.findIndex((page) => page.title.toLowerCase() === path.toLowerCase());
-}
+watch(
+  () => route.path,
+  (newPath) => {
+    const index = appPages.findIndex(
+      (page) => page.url.toLowerCase() === newPath.toLowerCase()
+    );
+    if (index !== -1) {
+      selectedIndex.value = index;
+    }
+  },
+  { immediate: true }
+);
 
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
@@ -115,7 +144,7 @@ import { useState } from '@/composables/state';
 // Only if you want to use the onProgressImport/Export events
 const { isJsonListeners, setIsJsonListeners } = useState(false);
 const { isModalOpen, setIsModalOpen } = useState(false);
-const { messageContent, setMessageContent } = useState("");
+const { messageContent, setMessageContent } = useState('');
 provide('$isJsonListeners', { isJsonListeners, setIsJsonListeners });
 provide('$isModalOpen', { isModalOpen, setIsModalOpen });
 provide('$messageContent', { messageContent, setMessageContent });
@@ -133,24 +162,25 @@ provide('$existingConn', { existConn: existConn, setExistConn: setExistConn });
 const onProgressImport = async (progress: string) => {
   if (isJsonListeners.value) {
     if (!isModalOpen.value) setIsModalOpen(true);
-    setMessageContent(
-      messageContent.value.concat(`${progress}\n`));
+    setMessageContent(messageContent.value.concat(`${progress}\n`));
   }
-}
+};
 const onProgressExport = async (progress: string) => {
   if (isJsonListeners.value) {
     if (!isModalOpen.value) setIsModalOpen(true);
-    setMessageContent(
-      messageContent.value.concat(`${progress}\n`));
+    setMessageContent(messageContent.value.concat(`${progress}\n`));
   }
-}
+};
 
 const app = getCurrentInstance();
 if (app != null) {
-  provide('$sqlite', useSQLite({
-    onProgressImport,
-    onProgressExport,
-  }));
+  provide(
+    '$sqlite',
+    useSQLite({
+      onProgressImport,
+      onProgressExport,
+    })
+  );
 }
 </script>
 

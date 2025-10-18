@@ -3,7 +3,7 @@
         <ion-card class="Productos">
             <div class="ion-card-header">
                 <ion-card-title>Tabla de Productos</ion-card-title>
-                <a class="btnAgregarStock" href="/folder/Inventario/AgregarExistencias">Agregar Existencias</a>
+                <a class="btnAgregarStock" href="/inventario/agregar-existencias">Agregar Existencias</a>
             </div>
             <ion-card-content>
                 <ion-grid>

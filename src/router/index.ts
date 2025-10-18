@@ -1,34 +1,35 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
+import Venta from '@/views/Venta.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '',
-    redirect: '/folder/Venta'
+    redirect: '/venta',
   },
   {
-    path: '/folder/Venta',
-    component: () => import ('../views/FolderVentas.vue')
+    path: '/venta',
+    component: Venta,
   },
   {
-    path: '/folder/Inventario',
-    component: () => import ('../views/FolderInventario.vue')
-  },
-
-  {
-    path: '/folder/Inventario/AgregarExistencias',
-    component: () => import ('../views/InventarioAgregarStock.vue')
+    path: '/inventario',
+    component: () => import('@/views/Inventario.vue'),
   },
 
   {
-    path: '/folder/Test',
-    component: () => import ('../views/FolderTest.vue')
-  }
-]
+    path: '/inventario/agregar-existencias',
+    component: () => import('@/views/InventarioAgregarStock.vue'),
+  },
+
+  {
+    path: '/barcode-scanner-test',
+    component: () => import('@/views/BarcodeScannerTest.vue'),
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;
