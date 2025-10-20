@@ -68,8 +68,6 @@ import {
   mailSharp,
   paperPlaneOutline,
   paperPlaneSharp,
-  telescopeOutline,
-  telescopeSharp,
 } from 'ionicons/icons';
 import { useIonRouter } from '@ionic/vue';
 import { useRoute } from 'vue-router';
@@ -91,12 +89,6 @@ const appPages = [
     url: '/inventario',
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp,
-  },
-  {
-    title: 'test',
-    url: '/barcode-scanner-test',
-    iosIcon: telescopeOutline,
-    mdIcon: telescopeSharp,
   },
 ];
 const labels = ['Family'];

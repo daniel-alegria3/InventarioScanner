@@ -10,6 +10,8 @@
       </ion-toolbar>
     </ion-header>
 
+    <slot name="header"></slot>
+
     <ion-content :fullscreen="fullscreen">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -20,6 +22,8 @@
       <!-- Contenido principal -->
       <slot> </slot>
     </ion-content>
+
+    <slot name="footer"></slot>
   </ion-page>
 </template>
 

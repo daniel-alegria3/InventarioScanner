@@ -15,16 +15,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/inventario',
     component: () => import('@/views/Inventario.vue'),
   },
-
-  {
-    path: '/inventario/agregar-existencias',
-    component: () => import('@/views/InventarioAgregarStock.vue'),
-  },
-
-  {
-    path: '/barcode-scanner-test',
-    component: () => import('@/views/BarcodeScannerTest.vue'),
-  },
 ];
 
 const router = createRouter({
