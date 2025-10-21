@@ -94,7 +94,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
 const { barcode, openBarcodeScanner } = useBarcodeScanner();
 
-interface FormData {
+interface Producto {
   id: number | null;
   name: string;
   price: number;
@@ -104,7 +104,7 @@ interface FormData {
 const props = withDefaults(
   defineProps<{
     type?: 'add' | 'update';
-    product?: FormData | null;
+    product?: Producto | null;
   }>(),
   {
     type: null,
@@ -115,7 +115,7 @@ const props = withDefaults(
 //------------------------------------------------------------------------------
 
 const ableDismiss = ref<boolean>(true);
-const form_data = ref<FormData>({ id: null, name: '', price: null, barcode: null });
+const form_data = ref<Producto>({ id: null, name: '', price: null, barcode: null });
 
 const isFormIncomplete: bolean = computed(() => {
   return form_data.value.name === '' || typeof form_data.value.price === Number;

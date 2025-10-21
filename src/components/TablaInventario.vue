@@ -4,7 +4,7 @@
       <!-- NOTE: margin set so that the fab button wont overlap -->
       <ion-grid style="margin-bottom: 56px">
         <!-- Encabezados de la tabla -->
-        <ion-row class="header ion-align-items-center">
+        <ion-row class="header">
           <ion-col
             :size="1"
             v-if="is_sel_mode_open"
@@ -26,11 +26,10 @@
 
         <!-- Filas dinámicas -->
         <ion-row
-          class="ion-align-items-center"
           v-for="(prod, index) in props.products"
           :key="index"
           @click="handleRowClick(prod, index)"
-          :class="{ selected: isProductSelected(prod.id) }"
+          :class="{ selected: isProductSelected(prod) }"
         >
           <ion-col
             :size="1"
@@ -38,9 +37,9 @@
             class="ion-display-inline-flex ion-justify-content-end ion-order-last"
           >
             <ion-checkbox
-              :checked="isProductSelected(prod.id)"
+              :checked="isProductSelected(prod)"
               @click.stop
-              @ionChange="toggleProductSelection(prod.id)"
+              @ionChange="toggleProductSelection(prod)"
             ></ion-checkbox>
           </ion-col>
           <ion-col :size="is_sel_mode_open ? 8 : 9" class="ion-justify-content-start">{{
@@ -70,11 +69,18 @@ import { ref, watch, computed } from 'vue';
 
 import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
 
+interface Producto {
+  id: number;
+  name: string;
+  price: number;
+  barcode: string | null;
+}
+
 //------------------------------------------------------------------------------
 
 const props = withDefaults(
   defineProps<{
-    products: any[];
+    products: Producto[];
   }>(),
   {
     products: [],
@@ -91,7 +97,7 @@ const is_sel_mode_open = defineModel('isSelModeOpen', {
 });
 
 const emit = defineEmits<{
-  normModeRowClick: [product: Object];
+  normModeRowClick: [product: Producto];
 }>();
 
 //------------------------------------------------------------------------------
@@ -103,15 +109,15 @@ const areAllSelected = computed(() => {
   );
 });
 
-const isProductSelected = (id: number) => {
-  return selected_products.value.includes(id);
+const isProductSelected = (producto: Producto) => {
+  return selected_products.value.some((p) => p.id === producto.id);
 };
 
 const toggleSelectAll = () => {
   if (areAllSelected.value) {
     selected_products.value = [];
   } else {
-    selected_products.value = props.products.map((p) => p.id);
+    selected_products.value = [...props.products];
   }
 };
 
@@ -120,7 +126,7 @@ const enterSelectionMode = (producto: Producto | null) => {
     is_sel_mode_open.value = true;
   }
   if (producto && !isProductSelected(producto.id)) {
-    selected_products.value.push(producto.id);
+    selected_products.value.push({ ...producto });
   }
 };
 
@@ -129,18 +135,18 @@ const exitSelectionMode = () => {
   selected_products.value = [];
 };
 
-const toggleProductSelection = (id: number) => {
-  const index = selected_products.value.indexOf(id);
+const toggleProductSelection = (producto: Producto) => {
+  const index = selected_products.value.findIndex((p) => p.id === producto.id);
   if (index > -1) {
     selected_products.value.splice(index, 1);
   } else {
-    selected_products.value.push(id);
+    selected_products.value.push({ ...producto });
   }
 };
 
 const handleRowClick = async (producto, index) => {
   if (is_sel_mode_open.value) {
-    toggleProductSelection(producto.id);
+    toggleProductSelection(producto);
   } else {
     emit('normModeRowClick', producto);
   }
@@ -156,6 +162,7 @@ ion-row.header {
 }
 ion-row {
   padding: 0px 0;
+  align-items: center;
 }
 ion-row:nth-child(odd) {
   background-color: var(--ion-color-light-shade);

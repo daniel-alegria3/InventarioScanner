@@ -1,230 +1,132 @@
 <template>
-    <ion-modal :is-open="props.isOpen" @didDismiss="cerrarModal" :inert="!props.isOpen">
-        <ion-page>
-            <ion-header>
-                <ion-toolbar>
-                    <ion-title>Buscar Producto</ion-title>
-                </ion-toolbar>
-            </ion-header>
+  <ion-page>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Buscar Productos</ion-title>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-input
+          v-model="search_text"
+          fill="outline"
+          placeholder="Buscar..."
+          type="text"
+        >
+        </ion-input>
+      </ion-toolbar>
+    </ion-header>
 
-            <ion-content class="ion-padding">
-                <ion-input v-model="search_text" fill="outline" label-placement="floating" label="Nombre del producto"
-                    type="text">
-                </ion-input>
-                <ion-button @click="cerrarModal" class="botonCerrar">Cerrar</ion-button>
-                <!-- Contenedor de categorías con scroll horizontal -->
-                <div class="categorias-scroll">
-                    <button class="categoria-btn" v-for="(categoria, index) in Categorias" :key="index"
-                        :class="['categoria-btn', { 'active': categoriaSeleccionada.includes(categoria) }]"
-                        @click="toggleCategoria(categoria, $event)">
-                        {{ categoria }}
-                    </button>
-                </div>
+    <ion-content class="ion-padding">
+      <!-- Tabla de Inventario -->
+      <TablaInventario
+        :products="filteredProductos"
+        v-model:selectedProducts="selected_products"
+        :isSelModeOpen="true"
+      />
+    </ion-content>
 
-                <ion-grid>
-                    <ion-card class="Mostrar">
-                        <ion-card-content>
-                            <ion-row class="headerProductos">
-                                <ion-col size="4">Producto</ion-col>
-                                <ion-col size="4">Stock</ion-col>
-                                <ion-col size="4">Precio</ion-col>
-                            </ion-row>
-                            <ion-row v-for="(product, index) in Productos" :key="index">
-                                <ion-col size="4"><button @click="addThis(product.nombre, product.precio)">{{
-                                    product.nombre }}</button></ion-col>
-                                <ion-col size="4">{{ product.stock }}</ion-col>
-                                <ion-col size="4">{{ product.precio }}</ion-col>
-                            </ion-row>
-                        </ion-card-content>
-                    </ion-card>
-                </ion-grid>
-            </ion-content>
-        </ion-page>
-    </ion-modal>
+    <ion-footer :translucent="true">
+      <ion-toolbar>
+        <ion-buttons slot="primary" class="">
+          <ion-button color="primary" @click="closeModal(selected_products)">
+            Aceptar
+            <ion-icon color="primary" slot="end" :icon="checkmark"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonModal, IonContent, IonButton, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonCard, IonCardContent, IonGrid, IonRow, IonCol, alertController } from '@ionic/vue';
-import { ref } from 'vue';
-import { useSearch } from "@/composables/useSearch";
-const { search_text, search_results } = useSearch();
+import {
+  IonModal,
+  IonContent,
+  IonButtons,
+  IonButton,
+  IonHeader,
+  IonFooter,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonInput,
+  IonCard,
+  IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonIcon,
+  alertController,
+  modalController,
+} from '@ionic/vue';
+import { checkmark } from 'ionicons/icons';
+import { ref, computed } from 'vue';
+import { useSearch } from '@/composables/useSearch';
 
+// const { search_text, search_results } = useSearch();
 
-const props = defineProps<{ isOpen: boolean }>(); // Definiendo la prop 'isOpen'
-const emit = defineEmits(['cerrar', 'agregar-producto']); // Definiendo los eventos 'cerrar' y 'agregar-producto'
-
-const cerrarModal = () => {
-    emit('cerrar'); // Emite el evento cuando se cierra el modal
-    categoriaSeleccionada.value = []; // Desactiva la categoría seleccionada
-};
+import TablaInventario from '@/components/TablaInventario.vue';
 
 interface Producto {
-    nombre: string;
-    stock: number;
-    precio: number;
+  id: number;
+  name: string;
+  price: number;
+  barcode: string | null;
 }
 
-const categoriaSeleccionada = ref<string[]>([]); // Ahora es un array vacío
+//------------------------------------------------------------------------------
 
-const toggleCategoria = (categoria: string, event: Event) => {
-    const index = categoriaSeleccionada.value.indexOf(categoria);
-
-    if (index !== -1) {
-        // Si ya está seleccionada, la eliminamos
-        categoriaSeleccionada.value.splice(index, 1);
-    } else {
-        // Si no está seleccionada, la agregamos
-        categoriaSeleccionada.value.push(categoria);
-
-        // Desplazamos la vista hacia el botón seleccionado
-        const target = event.currentTarget as HTMLElement;
-        target.scrollIntoView({ behavior: "smooth", inline: "center" });
-    }
-    console.log(categoriaSeleccionada.value);
-};
-
-
-const Productos = ref<Producto[]>([
-    { nombre: 'Pepsi', stock: 5, precio: 2.0 },
-    { nombre: 'Sprite', stock: 8, precio: 2.5 },
-    { nombre: 'Fanta', stock: 3, precio: 2.0 },
-    { nombre: 'Galletas', stock: 10, precio: 1.5 },
-    { nombre: 'Chocolates', stock: 6, precio: 1.0 },
-    { nombre: 'Cerveza', stock: 12, precio: 3.0 },
-    { nombre: 'Vodka', stock: 2, precio: 5.0 },
-    { nombre: 'Ron', stock: 4, precio: 4.0 },
-    { nombre: 'Whisky', stock: 3, precio: 6.0 },
-    { nombre: 'Tequila', stock: 5, precio: 3.5 },
-    { nombre: 'Vino', stock: 7, precio: 2.5 },
-    { nombre: 'Coca-Cola', stock: 6, precio: 2.0 },
-    { nombre: 'Pepsi', stock: 5, precio: 2.0 },
-    { nombre: 'Sprite', stock: 8, precio: 2.5 },
-    { nombre: 'Fanta', stock: 3, precio: 2.0 },
-    { nombre: 'Galletas', stock: 10, precio: 1.5 },
-    { nombre: 'Chocolates', stock: 6, precio: 1.0 },
-    { nombre: 'Cerveza', stock: 12, precio: 3.0 },
-    { nombre: 'Vodka', stock: 2, precio: 5.0 },
-    { nombre: 'Ron', stock: 4, precio: 4.0 },
-    { nombre: 'Whisky', stock: 3, precio: 6.0 },
-    { nombre: 'Tequila', stock: 5, precio: 3.5 },
-    { nombre: 'Vino', stock: 7, precio: 2.5 },
-    { nombre: 'Coca-Cola', stock: 6, precio: 2.0 },
-    { nombre: 'Pepsi', stock: 5, precio: 2.0 },
-    { nombre: 'Sprite', stock: 8, precio: 2.5 },
-    { nombre: 'Fanta', stock: 3, precio: 2.0 },
-    { nombre: 'Galletas', stock: 10, precio: 1.5 },
+// TODO: fetch productos with a db call
+const products = ref<Producto[]>([
+  { id: 0, name: 'Pepsi', price: 2.0, barcode: null },
+  { id: 1, name: 'Sprite', price: 2.5, barcode: null },
+  { id: 2, name: 'Fanta', price: 2.0, barcode: null },
+  { id: 3, name: 'Galletas', price: 1.5, barcode: null },
+  { id: 4, name: 'Chocolates', price: 1.0, barcode: null },
+  { id: 5, name: 'Cerveza', price: 3.0, barcode: null },
+  { id: 6, name: 'Vodka', price: 5.0, barcode: null },
+  { id: 7, name: 'Ron', price: 4.0, barcode: null },
+  { id: 8, name: 'Whisky', price: 6.0, barcode: null },
+  { id: 9, name: 'Tequila', price: 3.5, barcode: null },
+  { id: 10, name: 'Vino', price: 2.5, barcode: null },
+  { id: 11, name: 'Coca-Cola', price: 2.0, barcode: null },
+  { id: 12, name: 'Pepsi', price: 2.0, barcode: null },
+  { id: 13, name: 'Sprite', price: 2.5, barcode: null },
+  { id: 14, name: 'Fanta', price: 2.0, barcode: null },
+  { id: 15, name: 'Galletas', price: 1.5, barcode: null },
+  { id: 16, name: 'Chocolates', price: 1.0, barcode: null },
+  { id: 17, name: 'Cerveza', price: 3.0, barcode: null },
+  { id: 18, name: 'Vodka', price: 5.0, barcode: null },
+  { id: 19, name: 'Ron', price: 4.0, barcode: null },
+  { id: 21, name: 'Whisky', price: 6.0, barcode: null },
+  { id: 22, name: 'Tequila', price: 3.5, barcode: null },
+  { id: 23, name: 'Vino', price: 2.5, barcode: null },
+  { id: 24, name: 'Coca-Cola', price: 2.0, barcode: null },
+  { id: 25, name: 'Pepsi', price: 2.0, barcode: null },
+  { id: 26, name: 'Sprite', price: 2.5, barcode: null },
+  { id: 27, name: 'Fanta', price: 2.0, barcode: null },
+  { id: 28, name: 'Galletas', price: 1.5, barcode: null },
 ]);
-const Categorias = ref<string[]>(['Gaseosas', 'Dulces', 'Galletas', 'Snacks', 'Cervezas', 'Licores']);
+const selected_products = ref<number[]>([]);
 
-const addThis = async (nombre: string, precio: number): Promise<void> => {
-    const cantidad = 1;
-    const totalParcial = 0;
-    const alert = await alertController.create({
-        header: 'Agregar producto',
-        message: `Se agrego ${nombre}.`,
-        buttons: ['OK'],
-    });
-    alert.present();
-    emit('agregar-producto', { nombre, cantidad, precio, totalParcial }); // Emite el evento 'agregar-producto' con los datos del producto
-}
+const search_text = ref('');
+const filteredProductos = computed(() => {
+  if (!search_text.value.trim()) {
+    return products.value;
+  }
 
+  const search_lower = search_text.value.toLowerCase();
+  const filtered = products.value.filter(
+    (producto) =>
+      producto.name.toLowerCase().includes(search_lower) ||
+      (producto.barcode && producto.barcode.includes(search_text.value))
+  );
+  return [...filtered];
+});
+
+const closeModal = async (productos: Producto[] | null) => {
+  modalController.dismiss(productos, productos.length > 0 ? 'confirm' : 'cancel');
+};
 </script>
 
-<style scoped>
+<style scoped></style>
 
-.Mostrar {
-    margin: 20px 7% 0px 7%;
-    min-height: 200px;
-    max-height: 280px;
-    scroll-behavior: smooth;
-    overflow-y: auto;
-}
-
-ion-row.headerProductos {
-    font-weight: bold;
-    background-color: var(--ion-color-light);
-    text-align: center;
-    border-bottom: 1px solid var(--ion-color-medium);
-}
-
-ion-row {
-    text-align: center;
-    padding: 10px 0;
-}
-
-ion-row:nth-child(even) {
-    background-color: var(--ion-color-light-shade);
-}
-
-button {
-    background-color: transparent;
-    border: none;
-    color: var(--ion-color-primary);
-    cursor: pointer;
-}
-
-.categoria-btn {
-    flex: 0 0 auto;
-    margin: 10px;
-    color: white;
-    min-width: 80px;
-    max-width: none;
-    background-color: rgb(29, 28, 28);
-    padding: 9px;
-    text-overflow: clip;
-    border-radius: 10px;
-    overflow: visible;
-    border: 0.5px solid transparent;
-    /* Se inicia sin borde */
-    transition: border-color 0.1s ease-in-out, background-color 0.7s ease-in-out;
-    /* Agregamos una transición suave */
-}
-
-.categoria-btn.active {
-    border-color: white;
-    background-color: var(--ion-color-primary);
-    color: white;
-}
-
-.botonCerrar {
-    margin-top: 10px;
-    border-radius: 8px;
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-}
-
-ion-input {
-    background-color: rgb(29, 28, 28);
-    --padding-start: 15px;
-}
-
-.categorias-scroll {
-    display: flex;
-    overflow-x: auto;
-    /* Permite el desplazamiento horizontal */
-    white-space: nowrap;
-    /* Evita que los botones se rompan en varias líneas */
-    padding: 10px;
-    gap: 10px;
-    /* Espaciado entre botones */
-    scrollbar-width: thin;
-    /* Reduce el tamaño de la barra de desplazamiento en Firefox */
-    -webkit-overflow-scrolling: touch;
-    /* Mejora el desplazamiento en dispositivos táctiles */
-}
-
-/* Personaliza la barra de desplazamiento en Webkit (Chrome, Edge, Safari) */
-.categorias-scroll::-webkit-scrollbar {
-    height: 6px;
-}
-
-.categorias-scroll::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
-}
-
-.categorias-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-</style>

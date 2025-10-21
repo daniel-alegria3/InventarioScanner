@@ -233,8 +233,7 @@ const updateProduct = async (producto) => {
 };
 
 const deleteProducts = async () => {
-  console.log('nuts');
-  const ids = selected_products.value;
+  const ids = selected_products.value.map((p) => p.id);
   const alert = await alertController.create({
     header: 'Eliminar Producto',
     message: '¿Estás seguro de eliminar (' + ids.length + ') productos ?',
