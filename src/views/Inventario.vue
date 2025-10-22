@@ -20,8 +20,8 @@
       >
       <ion-button v-if="is_sel_mode_open" @click="is_sel_mode_open = false"
         >Cerrar Seleccion</ion-button
-      ></ion-header
-    >
+      >
+    </ion-header>
 
     <!-- Tabla de Inventario -->
     <TablaInventario
@@ -77,10 +77,10 @@ import {
   onIonViewDidEnter,
 } from '@ionic/vue';
 import { addOutline, barcodeOutline, trash } from 'ionicons/icons';
-import { ref, watch, computed, onMouted, onUnmounted } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 
-import { useSearch } from '@/composables/useSearch';
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
+import { useDatabase, Product } from '@/composables/useDatabase';
 
 import PageTemplate from '@/views/PageTemplate.vue';
 import TablaInventario from '@/components/TablaInventario.vue';
@@ -88,67 +88,25 @@ import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
 
 //------------------------------------------------------------------------------
 
-// const { search_text, search_results } = useSearch();
+const db = useDatabase();
 const { barcode, openBarcodeScanner } = useBarcodeScanner();
 
-interface Producto {
-  id: number | null;
-  name: string;
-  price: number;
-  barcode: string | null;
-}
-
-const productos = ref<Producto[]>([
-  { id: 1, name: 'Gaseosa ORO 2 litros waos uwu', price: 1.5, barcode: '123451' },
-  { id: 2, name: 'Galleta', price: 0.8, barcode: null },
-  { id: 3, name: 'Pastel', price: 1.0, barcode: null },
-  { id: 4, name: 'Chocolate', price: 0.5, barcode: null },
-  { id: 5, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 6, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 7, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 8, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 9, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 10, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 11, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 12, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 13, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 15, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 16, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 17, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 18, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 19, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 20, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 21, name: 'Gaseosa ORO 2 litros waos uwu', price: 1.5, barcode: '123451' },
-  { id: 22, name: 'Galleta', price: 0.8, barcode: null },
-  { id: 23, name: 'Pastel', price: 1.0, barcode: null },
-  { id: 24, name: 'Chocolate', price: 0.5, barcode: null },
-  { id: 25, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 31, name: 'Gaseosa ORO 2 litros waos uwu', price: 1.5, barcode: '123451' },
-  { id: 32, name: 'Galleta', price: 0.8, barcode: null },
-  { id: 33, name: 'Pastel', price: 1.0, barcode: null },
-  { id: 34, name: 'Chocolate', price: 0.5, barcode: null },
-  { id: 35, name: 'Caramelo', price: 0.2, barcode: null },
-  { id: 40, name: 'Termino', price: 0.2, barcode: null },
-]);
-
-//------------------------------------------------------------------------------
-
+const productos = ref<Product[]>([]);
 const selected_products = ref<number[]>([]);
 const is_sel_mode_open = ref<boolean>(false);
 
 const search_text = ref<string>('');
+
 const filteredProductos = computed(() => {
-  if (!search_text.value.trim()) {
+  if (search_text.value.trim() === '') {
     return productos.value;
   }
-
   const search_lower = search_text.value.toLowerCase();
-  const filtered = productos.value.filter(
-    (producto) =>
-      producto.name.toLowerCase().includes(search_lower) ||
-      (producto.barcode && producto.barcode.includes(search_text.value))
-  );
-  return [...filtered];
+  return productos.value.filter((p) => p.name.toLowerCase().includes(search_lower));
+});
+
+onMounted(async () => {
+  await recargarProductos();
 });
 
 watch(
@@ -174,13 +132,26 @@ watch(
   }
 );
 
-watch(barcode, (new_barcode) => {
-  if (new_barcode) {
-    search_text.value = new_barcode;
+watch(barcode, async (new_barcode) => {
+  if (new_barcode !== null) {
+    const prods = await db.getProductByBarcode(new_barcode);
+
+    if (prods) {
+      if (prods.length === 1) {
+        await updateProduct(prods[0]);
+      } else {
+        // TODO: handle two or more products with the same barcode (ERROR)
+        console.error('Bad!');
+      }
+    }
   }
 });
 
 //------------------------------------------------------------------------------
+
+const recargarProductos = async () => {
+  productos.value = await db.getProducts();
+};
 
 const agregarProducto = async () => {
   const modal = await modalController.create({
@@ -195,11 +166,8 @@ const agregarProducto = async () => {
   const { data, role } = await modal.onWillDismiss();
 
   if (data) {
-    console.log('Product added: ', data);
-    // TODO: call your API to add in database
-    // await db_agregarProducto(data);
-
-    productos.value.push({ ...data, id: productos.value.length + 2 });
+    await db.addProduct(data);
+    await recargarProductos();
   }
 };
 
@@ -217,18 +185,8 @@ const updateProduct = async (producto) => {
   const { data, role } = await modal.onWillDismiss();
 
   if (data) {
-    // TODO: call your API to update in database
-    // await db_actualizarProducto(data);
-    const index = productos.value.findIndex((prod) => prod.id === data.id);
-    if (index !== -1) {
-      // Update the product in the list
-      console.log('ONE: ', productos.value[index]);
-      console.log('TWO: ', data);
-      productos.value[index] = {
-        ...productos.value[index],
-        ...data,
-      };
-    }
+    await db.updateProduct(data.id, data);
+    await recargarProductos();
   }
 };
 
@@ -244,20 +202,9 @@ const deleteProducts = async () => {
       },
       {
         text: 'Eliminar',
-        handler: () => {
-          const idsToRemove = new Set(); // Convert 'ids' array to a Set for O(1) lookups
-          for (const id of ids) {
-            // TODO: llamar a una funcion que eliminara el producto de la base de datos
-            // db_eliminarProducto(id);
-
-            idsToRemove.add(id);
-          }
-          const filtered = productos.value.filter(
-            (producto) => !idsToRemove.has(producto.id)
-          );
-
-          productos.value.length = 0;
-          productos.value.push(...filtered);
+        handler: async () => {
+          await db.removeProducts(ids);
+          await recargarProductos();
 
           is_sel_mode_open.value = false;
         },

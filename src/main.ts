@@ -63,6 +63,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (!result.result) {
       throw new Error(`isJsonValid: "db_inventario_schema" is not valid`);
     }
+    // full import
     const resJson = await sqlite.importFromJson(JSON.stringify(db_inventario_schema));
     if (resJson.changes && resJson.changes.changes && resJson.changes.changes < 0) {
       throw new Error(`importFromJson: "full" failed`);

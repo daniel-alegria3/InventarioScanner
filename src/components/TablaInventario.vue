@@ -67,20 +67,14 @@ import {
 } from '@ionic/vue';
 import { ref, watch, computed } from 'vue';
 
+import { Product } from '@/services/DatabaseService';
 import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
-
-interface Producto {
-  id: number;
-  name: string;
-  price: number;
-  barcode: string | null;
-}
 
 //------------------------------------------------------------------------------
 
 const props = withDefaults(
   defineProps<{
-    products: Producto[];
+    products: Product[];
   }>(),
   {
     products: [],
@@ -97,7 +91,7 @@ const is_sel_mode_open = defineModel('isSelModeOpen', {
 });
 
 const emit = defineEmits<{
-  normModeRowClick: [product: Producto];
+  normModeRowClick: [product: Product];
 }>();
 
 //------------------------------------------------------------------------------
@@ -109,7 +103,7 @@ const areAllSelected = computed(() => {
   );
 });
 
-const isProductSelected = (producto: Producto) => {
+const isProductSelected = (producto: Product) => {
   return selected_products.value.some((p) => p.id === producto.id);
 };
 
@@ -121,7 +115,7 @@ const toggleSelectAll = () => {
   }
 };
 
-const enterSelectionMode = (producto: Producto | null) => {
+const enterSelectionMode = (producto: Product | null) => {
   if (!is_sel_mode_open.value) {
     is_sel_mode_open.value = true;
   }
@@ -135,7 +129,7 @@ const exitSelectionMode = () => {
   selected_products.value = [];
 };
 
-const toggleProductSelection = (producto: Producto) => {
+const toggleProductSelection = (producto: Product) => {
   const index = selected_products.value.findIndex((p) => p.id === producto.id);
   if (index > -1) {
     selected_products.value.splice(index, 1);

@@ -1,169 +1,158 @@
 import { SQLiteDBConnection, SQLiteHook } from 'vue-sqlite-hook/dist';
+import { Capacitor } from '@capacitor/core';
+// TODO: understand how to setup this from the main.ts, App.vue, etc. Clean it up
 
-export interface Producto {
-    id: number;
-    nombre: string;
-    precio: number;
-    unidad_medida: string | null;
-    categorias: string[] | null; // comma separated values
-    foto: any | null; // TODO: give it a proper type
-    cod_barra: string | null; // TODO: prone to change
-    stock: number | null; // TODO: prone to change
+const platform = Capacitor.getPlatform();
+
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  barcode: string | null;
 }
 
 export class DatabaseService {
-    private sqlite: SQLiteHook | undefined;
-    private db!: SQLiteDBConnection;
+  private sqlite: SQLiteHook;
+  private db!: SQLiteDBConnection;
+  private initPromise: Promise<void>; // To check that only one connection exists
 
-    constructor(sqlite: SQLiteHook | undefined) {
-        this.sqlite = sqlite;
+  constructor(sqlite: SQLiteHook) {
+    this.sqlite = sqlite;
+    this.initPromise = this.init();
+  }
+
+  async init(): Promise<void> {
+    const ret = await this.sqlite.checkConnectionsConsistency();
+    const isConn = (await this.sqlite.isConnection('db_inventario', false)).result;
+
+    if (ret.result && isConn) {
+      this.db = await this.sqlite.retrieveConnection('db_inventario', false);
+    } else {
+      this.db = await this.sqlite.createConnection(
+        'db_inventario',
+        false,
+        'no-encryption',
+        1,
+        false
+      );
     }
 
-    async init(): Promise<void> {
-        const ret = await this.sqlite.checkConnectionsConsistency();
-        const isConn = (await this.sqlite.isConnection("db_inventario", false)).result;
+    await this.db.open();
+    // await sqlite.closeConnection("db_inventario", false);
+  }
 
-        if (ret.result && isConn) {
-            this.db = await this.sqlite.retrieveConnection("db_inventario", false);
-        } else {
-            this.db = await this.sqlite.createConnection("db_inventario", false, "no-encryption", 1, false);
-        }
+  private async ensureInitialized(): Promise<void> {
+    await this.initPromise;
+  }
 
-        // await sqlite.closeConnection("db_inventario", false);
+  async close(): Promise<void> {
+    await this.ensureInitialized();
+    await this.db.close();
+  }
+
+  async getProducts(): Promise<Product[]> {
+    await this.ensureInitialized();
+    const res = await this.db.query(
+      `
+        SELECT id, name, price, barcode
+        FROM Product;
+      `
+    );
+    return res.values as Product[];
+  }
+
+  async getProductsByName(name: string): Promise<Product[]> {
+    await this.ensureInitialized();
+    const res = await this.db.query(
+      `
+        SELECT id, name, price, barcode
+        FROM Product
+        WHERE name LIKE ?;
+      `,
+      [`%${name}%`]
+    );
+    return res.values as Product[];
+  }
+
+  async getProductByBarcode(barcode: string): Promise<Product[]> {
+    await this.ensureInitialized();
+    const res = await this.db.query(
+      `
+        SELECT id, name, price, barcode
+        FROM Product
+        WHERE barcode = ?;
+      `,
+      [barcode]
+    );
+    return res.values as Product[];
+  }
+
+  async addProduct(product: Product): Promise<void> {
+    await this.ensureInitialized();
+    const res = await this.db.run(
+      `
+        INSERT INTO Product (name, price, barcode)
+        VALUES (?, ?, ?);
+      `,
+      this.product_to_array(product)
+    );
+    await this.check_run_response(res);
+  }
+
+  async removeProduct(id: number): Promise<void> {
+    await this.ensureInitialized();
+    const res = await this.db.run('DELETE FROM Product WHERE id = ?', [id]);
+    await this.check_run_response(res);
+  }
+
+  async removeProducts(ids: number[]): Promise<void> {
+    await this.ensureInitialized();
+
+    const statements = ids.map((id) => ({
+      statement: 'DELETE FROM Product WHERE id = ?',
+      values: [id],
+    }));
+    const res = await this.db.executeSet(statements);
+    await this.check_run_response(res);
+  }
+
+  async updateProduct(id: string, product: Product): Promise<void> {
+    await this.ensureInitialized();
+    const res = await this.db.run(
+      `
+        UPDATE Product
+        SET name = ?, price = ?, barcode = ?
+        WHERE id = ?
+      `,
+      this.product_to_array(product).concat([id])
+    );
+    await this.check_run_response(res);
+  }
+
+  async check_run_response(res: any): Promise<void> {
+    // For db.run() using INSERT, UPDATE and DELETE
+    if (res.changes && res.changes.changes && res.changes.changes < 0) {
+      throw new Error(`Error: sqlite query failed`);
     }
-
-    async obtener_productos(): Promise<Producto[]> {
-        await this.db.open();
-        const res = await this.db.query(`
-            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra
-            FROM producto;
-        `);
-        await this.db.close();
-        return this.array_to_producto(res.values as any[]);
+    // WARN: this is essential
+    if (platform === 'web') {
+      this.sqlite.saveToStore('db_inventario');
     }
+  }
 
-    async obtener_productos_por_nombre(texto: string): Promise<Producto[]> {
-        await this.db.open();
-        const res = await this.db.query(`
-            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
-            FROM producto
-            WHERE nombre LIKE;`,
-            [`%${texto}%`]
-        );
-        await this.db.close();
-        return this.array_to_producto(res.values as any[]);
-    }
+  product_to_array(product: Product): any[] {
+    return [
+      product.name,
+      product.price,
+      (product.barcode ?? '').trim() === '' ? null : product.barcode,
+    ];
+  }
 
-    async obtener_productos_por_nombre_y_categorias(nombre: string, categorias: string[]): Promise<Producto[]> {
-        if (nombre.trim() === "" && categorias.length === 0 ) {
-            return [] as any;
-        }
-
-        await this.db.open();
-        let params = [];
-        let nombre_cond = "";
-        let categorias_cond = "";
-
-        if (categorias.length > 0 ) {
-            categorias_cond += "("  + categorias.map(() => `categorias LIKE ?`).join(" OR ") +  ")";
-            params.push(...categorias.map(cat => `%${cat}%`));
-            if (nombre.trim() !== "" ) {
-                nombre_cond += "AND ";
-            }
-        }
-        if (nombre.trim() !== "" ) {
-            nombre_cond += "nombre LIKE ?";
-            params.push(`%${nombre}%`);
-        }
-
-        const res = await this.db.query(`
-            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
-            FROM producto
-            WHERE ${categorias_cond} ${nombre_cond};`,
-            params
-        );
-        await this.db.close();
-        return this.array_to_producto(res.values as any[]);
-    }
-
-    async obtener_producto_por_cod_barra(cod_barra: string): Promise<Producto[]> {
-        await this.db.open();
-        const res = await this.db.query(`
-            SELECT id, nombre, precio, unidad_medida, categorias, foto, cod_barra, stock
-            FROM producto
-            WHERE cod_barra = ?;`,
-            [cod_barra]
-        );
-        await this.db.close();
-        return this.array_to_producto(res.values as any[]);
-    }
-
-    async añadir_producto(producto: Producto): Promise<void> {
-        await this.db.open();
-        const res = await this.db.run(`
-            INSERT INTO producto (nombre, precio, unidad_medida, categorias, foto, cod_barra, stock)
-            VALUES (?, ?, ?, ?, ?, ?, ?);`,
-            this.producto_to_array(producto)
-        );
-        await this.check_run_response(res);
-        await this.db.close();
-    }
-
-    async quitar_producto(id: string): Promise<void> {
-        await this.db.open();
-        const res = await this.db.run("DELETE FROM producto WHERE id = ?", [id]);
-        await this.check_run_response(res);
-        await this.db.close();
-    }
-
-    async actualizar_producto(id: string, producto: Producto): Promise<void> {
-        await this.db.open();
-        const params = this.producto_to_array(producto).concat([id]);
-        const res = await this.db.run(`
-            UPDATE producto
-            SET nombre = ?, precio = ?, unidad_medida = ?, categorias = ?, foto = ?, cod_barra = ?, stock = ?
-            WHERE id = ?`,
-            params
-        );
-        await this.check_run_response(res);
-        await this.db.close();
-    }
-
-    async check_run_response(res: any): Promise<void> {
-        // For db.run() using INSERT, UPDATE and DELETE
-        if(res.changes && res.changes.changes && res.changes.changes < 0) {
-            throw new Error(`Error: sqlite query failed`);
-        }
-    }
-
-    producto_to_array(producto: Producto): any[] {
-        let cats: string|null = "";
-        let categorias = producto.categorias ?? null;
-        if (categorias) {
-            cats = categorias.join(",");
-        }
-        if (cats.trim() === "") {
-            cats = null;
-        }
-        return [
-            producto.nombre,
-            producto.precio,
-            (producto.unidad_medida ?? "").trim() === "" ? null : producto.unidad_medida,
-            cats,
-            (producto.foto ?? "").trim() === "" ? null : producto.foto,
-            (producto.cod_barra ?? "").trim() === "" ? null : producto.cod_barra,
-            Number.isInteger(producto.stock ?? null) ? producto.stock : null,
-        ];
-    }
-
-    array_to_producto(array: any[]): Producto[] {
-        return array.map(this.tranformar_categorias);
-    }
-
-    tranformar_categorias(obj: any): Producto {
-        return {
-            ...obj,
-            categorias: obj.categorias ? obj.categorias.split(",") : [],
-        }
-    }
+  array_to_product(array: any[]): Product[] {
+    return array.map((row) => {
+      return {
+        ...row,
+      };
+    });
+  }
 }

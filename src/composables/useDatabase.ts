@@ -1,16 +1,22 @@
-import { ref, onMounted, inject } from "vue";
-import { DatabaseService, Producto } from "@/services/DatabaseService";
+import { inject } from 'vue';
+import { DatabaseService, Product } from '@/services/DatabaseService';
+import { SQLiteHook } from 'vue-sqlite-hook/dist';
 
-export function useDatabase() {
-  const productos = ref([] as Producto[]);
-  const db = new DatabaseService(inject('$sqlite'));
+let dbInstance: DatabaseService | null = null;
 
-  const fetchProductos = async () => {
-    productos.value = await db.obtener_productos();
-  };
+export function useDatabase(): DatabaseService {
+  if (dbInstance) {
+    return dbInstance;
+  }
 
-  onMounted(fetchProductos); // Fetch on component mount
+  const sqlite = inject<SQLiteHook>('$sqlite');
 
-  return { productos, fetchProductos };
+  if (!sqlite) {
+    throw new Error('SQLite not provided. Make sure to provide $sqlite in your app.');
+  }
+
+  dbInstance = new DatabaseService(sqlite);
+  return dbInstance;
 }
 
+export type { Product };

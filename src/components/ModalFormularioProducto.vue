@@ -90,21 +90,14 @@ import {
 import { barcodeSharp, barcodeOutline } from 'ionicons/icons';
 import { ref, computed, watch, onMounted } from 'vue';
 
-// import { Producto } from '@/services/DatabaseService';
+import { Product } from '@/services/DatabaseService';
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
 const { barcode, openBarcodeScanner } = useBarcodeScanner();
-
-interface Producto {
-  id: number | null;
-  name: string;
-  price: number;
-  barcode: string | null;
-}
 
 const props = withDefaults(
   defineProps<{
     type?: 'add' | 'update';
-    product?: Producto | null;
+    product?: Product | null;
   }>(),
   {
     type: null,
@@ -115,7 +108,7 @@ const props = withDefaults(
 //------------------------------------------------------------------------------
 
 const ableDismiss = ref<boolean>(true);
-const form_data = ref<Producto>({ id: null, name: '', price: null, barcode: null });
+const form_data = ref<Product>({ id: null, name: '', price: null, barcode: null });
 
 const isFormIncomplete: bolean = computed(() => {
   return form_data.value.name === '' || typeof form_data.value.price === Number;
@@ -186,7 +179,7 @@ const handleSubmit = async () => {
   cerrarModal({ ...form_data.value });
 };
 
-const cerrarModal = async (producto: Producto | null) => {
+const cerrarModal = async (producto: Product | null) => {
   const modal = await modalController.getTop();
   modal.canDismiss = true;
   modal.dismiss(producto, producto ? 'confirm' : 'cancel');
