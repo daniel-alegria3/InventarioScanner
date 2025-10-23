@@ -80,9 +80,15 @@
           <span>S/ {{ precio_total.toFixed(2) }}</span>
         </h1>
         <div class="ion-text-right">
-          <ion-button @click="cancelarVenta">
+          <ion-button color="danger" @click="cancelarVenta">
             <ion-icon slot="start" :icon="cash"></ion-icon>
             Cancelar
+          </ion-button>
+        </div>
+        <div class="ion-text-right">
+          <ion-button @click="openBarcodeScannerMultiple">
+            <ion-icon slot="start" :icon="cash"></ion-icon>
+            Scaneador
           </ion-button>
         </div>
       </ion-card-content>
@@ -120,6 +126,9 @@ import {
 } from 'ionicons/icons';
 import { ref, watch } from 'vue';
 
+import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
+import { useDatabase } from '@/composables/useDatabase';
+
 import PageTemplate from '@/views/PageTemplate.vue';
 import ModalBuscarProducto from '@/components/ModalBuscarProducto.vue';
 
@@ -139,6 +148,23 @@ interface VentaItem {
 const ventaItems = ref<Product[]>([]);
 const precio_total = ref<number>(0);
 
+const db = useDatabase();
+
+const barcodeScaneado = async (barcode) => {
+  // TODO: handle one or more products with same barcode?
+  const prods = await db.getProductsByBarcode(barcode);
+
+  if (prods.length > 0) {
+    playScannerBeep();
+    agregarProducto(prods[0]);
+    calcularTotal();
+  } else {
+    playErrorBeep();
+  }
+};
+
+const { openBarcodeScannerMultiple } = useBarcodeScanner(barcodeScaneado);
+
 const openBuscadorProducto = async () => {
   const modal = await modalController.create({
     component: ModalBuscarProducto,
@@ -152,26 +178,30 @@ const openBuscadorProducto = async () => {
     console.log('Selected products: ', data);
 
     for (const product of data) {
-      const index = ventaItems.value.findIndex((vi) => vi.product.id === product.id);
-      if (index > -1) {
-        ventaItems.value[index].quantity++;
-      } else {
-        ventaItems.value.push({
-          product: product,
-          quantity: 1,
-        });
-      }
+      agregarProducto(product);
     }
     calcularTotal();
   }
 };
 
 const calcularTotal = () => {
-  // WARN: maybe implement a watch() to not manually call this
-  //       but for now looks performant
+  // WARN: maybe implement a watch() or computed() to not manually call this
+  //       but for now looks performant on 'openBuscadorProducto'
   precio_total.value = ventaItems.value.reduce((suma, vi) => {
     return suma + vi.quantity * vi.product.price;
   }, 0);
+};
+
+const agregarProducto = (product) => {
+  const index = ventaItems.value.findIndex((vi) => vi.product.id === product.id);
+  if (index > -1) {
+    ventaItems.value[index].quantity++;
+  } else {
+    ventaItems.value.push({
+      product: product,
+      quantity: 1,
+    });
+  }
 };
 
 const incVentaItem = (venta: VentaItem, amount: number) => {
@@ -193,6 +223,44 @@ const deleteVentaItem = async (item: VentaItem) => {
 const cancelarVenta = () => {
   ventaItems.value = [];
   precio_total.value = 0;
+};
+
+const playScannerBeep = () => {
+  const audioContext = new (window.AudioContext ||
+    (window as any).webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.frequency.value = 2400;
+  oscillator.type = 'square';
+
+  gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.06);
+};
+
+const playErrorBeep = () => {
+  const audioContext = new (window.AudioContext ||
+    (window as any).webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.frequency.value = 300;
+  oscillator.type = 'square';
+
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.3);
 };
 </script>
 

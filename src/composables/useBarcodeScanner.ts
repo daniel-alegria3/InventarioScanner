@@ -3,9 +3,7 @@ import { modalController } from '@ionic/vue';
 import { ref } from 'vue';
 import ModalBarcodeScanner from '@/components/ModalBarcodeScanner.vue';
 
-export function useBarcodeScanner() {
-  const barcode = ref<Object>({});
-
+export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
   const openBarcodeScanner = async () => {
     const modal = await modalController.create({
       component: ModalBarcodeScanner,
@@ -17,10 +15,28 @@ export function useBarcodeScanner() {
     const { data, role } = await modal.onWillDismiss();
 
     if (data) {
-      // data.valor/formato/tipo_valor
-      barcode.value = data.valor;
+      // data.value/format/type
+      return data.value;
     }
+    return null;
   };
 
-  return { barcode, openBarcodeScanner };
+  const openBarcodeScannerMultiple = async () => {
+    const modal = await modalController.create({
+      component: ModalBarcodeScanner,
+      cssClass: 'barcode-scanning-modal',
+      componentProps: {
+        onBarcodeScanned: (barcodeData: any) => {
+          // barcodeData.value/format/type
+          onScanned(barcodeData.value);
+        },
+      },
+    });
+
+    modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+  };
+
+  return { openBarcodeScanner, openBarcodeScannerMultiple };
 }

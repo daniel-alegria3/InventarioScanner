@@ -5,7 +5,7 @@
         <ion-toolbar>
           <ion-searchbar v-model="search_text" placeholder="Buscar producto" />
           <ion-buttons slot="end">
-            <ion-button @click="openBarcodeScanner">
+            <ion-button @click="buscarPorBarcode">
               <ion-icon aria-hidden="true" slot="icon-only" :icon="barcodeOutline" />
             </ion-button>
           </ion-buttons>
@@ -89,7 +89,8 @@ import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
 //------------------------------------------------------------------------------
 
 const db = useDatabase();
-const { barcode, openBarcodeScanner } = useBarcodeScanner();
+const { openBarcodeScanner } = useBarcodeScanner();
+const barcode = ref<string>(null);
 
 const productos = ref<Product[]>([]);
 const selected_products = ref<number[]>([]);
@@ -134,7 +135,7 @@ watch(
 
 watch(barcode, async (new_barcode) => {
   if (new_barcode !== null) {
-    const prods = await db.getProductByBarcode(new_barcode);
+    const prods = await db.getProductsByBarcode(new_barcode);
 
     if (prods) {
       if (prods.length === 1) {
@@ -148,6 +149,9 @@ watch(barcode, async (new_barcode) => {
 });
 
 //------------------------------------------------------------------------------
+const buscarPorBarcode = async () => {
+  barcode.value = await openBarcodeScanner();
+};
 
 const recargarProductos = async () => {
   productos.value = await db.getProducts();

@@ -74,7 +74,7 @@ export class DatabaseService {
     return res.values as Product[];
   }
 
-  async getProductByBarcode(barcode: string): Promise<Product[]> {
+  async getProductsByBarcode(barcode: string): Promise<Product[]> {
     await this.ensureInitialized();
     const res = await this.db.query(
       `

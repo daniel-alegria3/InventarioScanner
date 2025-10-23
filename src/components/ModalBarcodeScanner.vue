@@ -1,32 +1,32 @@
 <template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Scanning</ion-title>
-        <ion-buttons slot="end">
-          <ion-button @click="closeModal">
-            <ion-icon :icon="close"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Scanning</ion-title>
+      <ion-buttons slot="end">
+        <ion-button @click="closeModal(null)">
+          <ion-icon :icon="close"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
 
-    <ion-content>
-      <video v-if="isWeb" ref='videoElement' autoplay class="video"></video>
-      <div ref='squareElement' class="square"></div>
-      <div class="zoom-ratio-wrapper">
-        <ion-range
-          :min="minZoomRatio"
-          :max="maxZoomRatio"
-          :disabled="minZoomRatio === undefined || maxZoomRatio === undefined"
-          @ionChange="setZoomRatio"
-        ></ion-range>
-      </div>
-      <ion-fab v-if="isTorchAvailable" slot="fixed" horizontal="end" vertical="bottom">
-        <ion-fab-button @click="toggleTorch">
-          <ion-icon :icon="flashlight"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
-    </ion-content>
+  <ion-content>
+    <video v-if="isWeb" ref="videoElement" autoplay class="video"></video>
+    <div ref="squareElement" class="square"></div>
+    <div class="zoom-ratio-wrapper">
+      <ion-range
+        :min="minZoomRatio"
+        :max="maxZoomRatio"
+        :disabled="minZoomRatio === undefined || maxZoomRatio === undefined"
+        @ionChange="setZoomRatio"
+      ></ion-range>
+    </div>
+    <ion-fab v-if="isTorchAvailable" horizontal="end" vertical="bottom">
+      <ion-fab-button @click="toggleTorch">
+        <ion-icon :icon="flashlight"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </ion-content>
 </template>
 
 <script setup lang="ts">
@@ -54,35 +54,38 @@ import {
 } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
 
-export interface CodigoBarra {
-    valor: string;
-    formato: BarcodeFormat;
-    tipo_valor: BarcodeValueType;
+export interface Barcode {
+  value: string;
+  format: BarcodeFormat;
+  type: BarcodeValueType;
 }
 
-const props = withDefaults(defineProps<{
-  lensFacing?: LensFacing;
-  formats?: BarcodeFormat[];
-  barcode?: CodigoBarra;
-}>(), {
-  lensFacing: LensFacing.Back,
-  formats: [
-    BarcodeFormat.Aztec,
-    BarcodeFormat.Codabar,
-    BarcodeFormat.Code39,
-    BarcodeFormat.Code93,
-    BarcodeFormat.Code128,
-    BarcodeFormat.DataMatrix,
-    BarcodeFormat.Ean8,
-    BarcodeFormat.Ean13,
-    BarcodeFormat.Itf,
-    BarcodeFormat.Pdf417,
-    BarcodeFormat.QrCode,
-    BarcodeFormat.UpcA,
-    BarcodeFormat.UpcE,
-    BarcodeFormat.QrCode,
-  ]
-});
+const props = withDefaults(
+  defineProps<{
+    lensFacing?: LensFacing;
+    formats?: BarcodeFormat[];
+    barcode?: Barcode;
+    onBarcodeScanned?: (barcode: string) => void;
+  }>(),
+  {
+    lensFacing: LensFacing.Back,
+    formats: [
+      BarcodeFormat.Aztec,
+      BarcodeFormat.Codabar,
+      BarcodeFormat.Code39,
+      BarcodeFormat.Code93,
+      BarcodeFormat.Code128,
+      BarcodeFormat.DataMatrix,
+      BarcodeFormat.Ean8,
+      BarcodeFormat.Ean13,
+      BarcodeFormat.Itf,
+      BarcodeFormat.Pdf417,
+      BarcodeFormat.UpcA,
+      BarcodeFormat.UpcE,
+    ],
+    onBarcodeScanned: null,
+  }
+);
 
 const squareElement = ref<HTMLDivElement | undefined>(undefined);
 const videoElement = ref<HTMLVideoElement | undefined>(undefined);
@@ -90,6 +93,9 @@ const isWeb = ref<bool>(Capacitor.getPlatform() === 'web');
 const isTorchAvailable = ref(false);
 const minZoomRatio = ref<number | undefined>(undefined);
 const maxZoomRatio = ref<number | undefined>(undefined);
+
+let listener: any = null;
+let timeoutChecker: any = null;
 
 onMounted(async () => {
   nextTick();
@@ -112,14 +118,13 @@ const setZoomRatio = (event) => {
   BarcodeScanner.setZoomRatio({ zoomRatio: parseInt(event.detail.value, 10) });
 };
 
-const closeModal = async (barcode: CodigoBarra | null) => {
+const closeModal = async (barcode: Barcode | null) => {
   modalController.dismiss(barcode, 'confirm');
 };
 
 const toggleTorch = async () => {
   await BarcodeScanner.toggleTorch();
 };
-
 
 const startScan = async () => {
   // Hide everything behind the modal (see `src/theme/variables.scss`)
@@ -154,8 +159,26 @@ const startScan = async () => {
       ]
     : undefined;
 
-  const listener = await BarcodeScanner.addListener('barcodesScanned', async (event) => {
-    await nextTick();
+  // Controlled block to the listener from going off every frame that a barcode is on screen
+  const ON_SCANNED_TIMEOUT = 500;
+  let barcode_scan_succesful: bolean = false;
+  let last_scan_time: number = Date.now();
+  const colors = {
+    ready: '#e2e8f0',
+    blocked: '#334155',
+    detected: '#3195fc',
+  };
+  timeoutChecker = setInterval(() => {
+    // Reset the flag to block the listener
+    if (barcode_scan_succesful && Date.now() - last_scan_time > ON_SCANNED_TIMEOUT) {
+      barcode_scan_succesful = false;
+      squareElement.value.style.borderColor = colors.ready;
+    }
+  }, ON_SCANNED_TIMEOUT);
+  squareElement.value.style.borderColor = colors.ready;
+
+  listener = await BarcodeScanner.addListener('barcodesScanned', async (event) => {
+    last_scan_time = Date.now();
 
     const firstBarcode: Barcode | undefined = event.barcodes[0];
     if (!firstBarcode) {
@@ -178,13 +201,24 @@ const startScan = async () => {
       }
     }
 
-    listener.remove();
+    if (barcode_scan_succesful) {
+      squareElement.value.style.borderColor = colors.blocked;
+      return;
+    }
+    barcode_scan_succesful = true;
+    squareElement.value.style.borderColor = colors.detected;
 
-    await closeModal({
-      valor:  firstBarcode.displayValue,
-      formato: firstBarcode.format,
-      tipo_valor: firstBarcode.valueType,
-    } as CodigoBarra);
+    const barcodeData = {
+      value: firstBarcode.displayValue,
+      format: firstBarcode.format,
+      type: firstBarcode.valueType,
+    } as Barcode;
+
+    if (props.onBarcodeScanned) {
+      await props.onBarcodeScanned(barcodeData);
+    } else {
+      await closeModal(barcodeData);
+    }
   });
 
   await BarcodeScanner.startScan(options);
@@ -197,9 +231,10 @@ const startScan = async () => {
 const stopScan = async () => {
   // Show everything behind the modal again
   document.querySelector('body')?.classList.remove('barcode-scanning-active');
+  listener.remove();
+  clearInterval(timeoutChecker);
   await BarcodeScanner.stopScan();
 };
-
 </script>
 
 <style scoped>
@@ -233,4 +268,3 @@ ion-content {
   width: 50%;
 }
 </style>
-

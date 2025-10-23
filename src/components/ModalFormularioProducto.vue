@@ -32,7 +32,7 @@
             </ion-col>
             <ion-col class="ion-no-flex" size="auto">
               <ion-button
-                @click="openBarcodeScanner"
+                @click="escanearBarcode"
                 :color="form_data.barcode ? 'success' : 'medium'"
                 fill="outline"
               >
@@ -92,7 +92,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 
 import { Product } from '@/services/DatabaseService';
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
-const { barcode, openBarcodeScanner } = useBarcodeScanner();
+const { openBarcodeScanner } = useBarcodeScanner();
 
 const props = withDefaults(
   defineProps<{
@@ -106,6 +106,8 @@ const props = withDefaults(
 );
 
 //------------------------------------------------------------------------------
+
+const barcode = ref<string>(null);
 
 const ableDismiss = ref<boolean>(true);
 const form_data = ref<Product>({ id: null, name: '', price: null, barcode: null });
@@ -164,6 +166,10 @@ onMounted(async () => {
 });
 
 //------------------------------------------------------------------------------
+
+const escanearBarcode = async () => {
+  barcode.value = await openBarcodeScanner();
+};
 
 const handleSubmit = async () => {
   if (isFormIncomplete.value) {
