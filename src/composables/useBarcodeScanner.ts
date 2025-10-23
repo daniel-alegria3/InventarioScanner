@@ -4,6 +4,11 @@ import { ref } from 'vue';
 import ModalBarcodeScanner from '@/components/ModalBarcodeScanner.vue';
 
 export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
+  const barcodeToString = (barcodeData: any) => {
+    // data.value/format/type
+    return `${barcodeData.format}:${barcodeData.value}`;
+  };
+
   const openBarcodeScanner = async () => {
     const modal = await modalController.create({
       component: ModalBarcodeScanner,
@@ -15,8 +20,7 @@ export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
     const { data, role } = await modal.onWillDismiss();
 
     if (data) {
-      // data.value/format/type
-      return data.value;
+      return barcodeToString(data);
     }
     return null;
   };
@@ -27,8 +31,7 @@ export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
       cssClass: 'barcode-scanning-modal',
       componentProps: {
         onBarcodeScanned: (barcodeData: any) => {
-          // barcodeData.value/format/type
-          onScanned(barcodeData.value);
+          onScanned(barcodeToString(barcodeData));
         },
       },
     });
