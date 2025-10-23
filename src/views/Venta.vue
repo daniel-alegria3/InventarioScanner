@@ -216,6 +216,7 @@ const incVentaItem = (venta: VentaItem, amount: number) => {
 const deleteVentaItem = async (item: VentaItem) => {
   const index = ventaItems.value.findIndex((vi) => vi.product.id === item.product.id);
   ventaItems.value.splice(index, 1);
+  calcularTotal();
 };
 
 const cancelarVenta = () => {
