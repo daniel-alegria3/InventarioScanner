@@ -22,6 +22,7 @@
     "@capacitor/status-bar": "^7.0.0",
     "@ionic/vue": "^8.4.1",
     "@ionic/vue-router": "^8.0.0",
+    "barcode-detector": "^3.0.6",
     "ionicons": "^7.4.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"

@@ -102,15 +102,13 @@ onMounted(async () => {
   if (!isWeb.value) {
     const { available } = await BarcodeScanner.isTorchAvailable();
     isTorchAvailable.value = available;
-    await BarcodeScanner.requestPermissions();
-    await startScan();
   }
+  await BarcodeScanner.requestPermissions();
+  await startScan();
 });
 
 onBeforeUnmount(async () => {
-  if (!isWeb.value) {
-    await stopScan();
-  }
+  await stopScan();
 });
 
 const setZoomRatio = (event) => {
