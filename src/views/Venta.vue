@@ -40,7 +40,7 @@
                     <ion-button
                       @click="incVentaItem(item, -1)"
                       size="small"
-                      color="primary"
+                      color="tertiary"
                       fill="clear"
                     >
                       <ion-icon slot="icon-only" :icon="caretBackOutline"></ion-icon>
@@ -48,15 +48,13 @@
                   </ion-col>
                   <ion-col size="auto">
                     <!-- TODO: number input here to directly edit the amount? -->
-                    <ion-text
-                      ><strong>{{ item.quantity }}</strong></ion-text
-                    >
+                    <ion-badge color="tertiary">{{ item.quantity }}</ion-badge>
                   </ion-col>
                   <ion-col size="auto">
                     <ion-button
                       @click="incVentaItem(item, +1)"
                       size="small"
-                      color="primary"
+                      color="tertiary"
                       fill="clear"
                     >
                       <ion-icon slot="icon-only" :icon="caretForwardOutline"></ion-icon>
@@ -114,7 +112,7 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonText,
+  IonBadge,
   modalController,
 } from '@ionic/vue';
 import {
