@@ -1,8 +1,11 @@
 import { createApp, provide } from 'vue';
 import App from './App.vue';
 import router from './router';
+
+// Polyfills
 import 'barcode-detector/polyfill';
 
+// Ionic lf
 import { IonicVue } from '@ionic/vue';
 
 /* Core CSS required for Ionic components to work properly */
@@ -35,46 +38,21 @@ import '@ionic/vue/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 
-/* SQLite imports */
-import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
-import { Capacitor } from '@capacitor/core';
-import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
-import { db_inventario_schema } from '@/utils/sqlite-schemas';
+// SQLite plugin
+import { initializeSQLite } from './sqlite.ts';
 
-jeepSqlite(window);
-
+// Vue app
 window.addEventListener('DOMContentLoaded', async () => {
-  const platform = Capacitor.getPlatform();
-  const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
-
   const app = createApp(App).use(IonicVue).use(router);
 
   try {
-    if (platform === 'web') {
-      // Create the 'jeep-sqlite' Stencil component
-      const jeepSqlite = document.createElement('jeep-sqlite');
-      document.body.appendChild(jeepSqlite);
-      await customElements.whenDefined('jeep-sqlite');
-      // Initialize the Web store
-      await sqlite.initWebStore();
-    }
-
-    // initialize database schema
-    const result = await sqlite.isJsonValid(JSON.stringify(db_inventario_schema));
-    if (!result.result) {
-      throw new Error(`isJsonValid: "db_inventario_schema" is not valid`);
-    }
-    // full import
-    const resJson = await sqlite.importFromJson(JSON.stringify(db_inventario_schema));
-    if (resJson.changes && resJson.changes.changes && resJson.changes.changes < 0) {
-      throw new Error(`importFromJson: "full" failed`);
-    }
+    await initializeSQLite(app);
 
     router.isReady().then(() => {
       app.mount('#app');
     });
   } catch (err) {
-    console.log(`Error: ${err}`);
-    throw new Error(`Error: ${err}`);
+    console.log(`Application startup error: ${err}`);
+    throw new Error(`Application startup error: ${err}`);
   }
 });

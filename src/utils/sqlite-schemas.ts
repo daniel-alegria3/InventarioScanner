@@ -1,5 +1,5 @@
 export const db_inventario_schema = {
-  database: 'db_inventario',
+  database: 'db_name',
   version: 1,
   encrypted: false,
   mode: 'full',
@@ -12,26 +12,24 @@ export const db_inventario_schema = {
         { column: 'price', value: 'REAL NOT NULL' },
         { column: 'barcode', value: 'TEXT' },
 
-        // { foreignkey: "teacherId", value:"REFERENCES teachers(id) ON DELETE CASCADE"}
-        // { column:'sql_deleted', value:'BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))'},
-        // { column:'last_modified', value:'INTEGER DEFAULT (strftime(\'%s\', \'now\'))'},
-        // { constraint: 'PK_albumartist_albumname', value: 'PRIMARY KEY (id,nombre)'},
+        { column: 'last_modified', value: "INTEGER DEFAULT (strftime('%s', 'now'))" },
+        {
+          column: 'sql_deleted',
+          value: 'BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1))',
+        },
       ],
-      // indexes: [
-      //   { name: 'index_album_on_albumartist_albumname', value: 'albumartist,albumname' },
-      //   { name: 'index_album_on_last_modified', value: 'last_modified DESC' },
-      // ],
-      // triggers: [
-      //   {
-      //     name: "classes_trigger_last_modified",
-      //     timeevent: "AFTER UPDATE",
-      //     logic: "FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified BEGIN UPDATE images SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;END;"
-      //   }
-      // ],
-      values: [
-        [1, 'Leche gloria grande', '3.50', "12345"],
-        [2, 'Leche gloria pequeña', '1.50', null],
-        [3, 'Yogur gloria pequeña', '2.00', null],
+      indexes: [
+        { name: 'index_album_on_barcode', value: 'barcode' },
+        { name: 'index_product_on_last_modified', value: 'last_modified DESC' },
+      ],
+      triggers: [
+        {
+          name: 'product_trigger_last_modified',
+          timeevent: 'AFTER UPDATE',
+          condition: 'FOR EACH ROW WHEN NEW.last_modified <= OLD.last_modified',
+          logic:
+            "BEGIN UPDATE Product SET last_modified = (strftime('%s', 'now')) WHERE id=NEW.id; END;",
+        },
       ],
     },
   ],

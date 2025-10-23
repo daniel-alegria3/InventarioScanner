@@ -9,13 +9,11 @@ export function useDatabase(): DatabaseService {
     return dbInstance;
   }
 
-  const sqlite = inject<SQLiteHook>('$sqlite');
-
+  const sqlite = inject<SQLiteHook>('sqlite');
   if (!sqlite) {
-    throw new Error('SQLite not provided. Make sure to provide $sqlite in your app.');
+    throw new Error('SQLite not provided. Make sure to provide "sqlite" in your app.');
   }
-
-  dbInstance = new DatabaseService(sqlite);
+  dbInstance = new DatabaseService(sqlite, 'db_inventario');
   return dbInstance;
 }
 

@@ -29,14 +29,19 @@
           <ion-list id="labels-list">
             <ion-list-header>Labels</ion-list-header>
 
-            <ion-item v-for="(label, index) in labels" lines="none" :key="index">
+            <ion-item
+              v-for="(label, index) in labels"
+              :key="index"
+              lines="none"
+              @click="label.action"
+            >
               <ion-icon
                 aria-hidden="true"
                 slot="start"
                 :ios="bookmarkOutline"
                 :md="bookmarkSharp"
               ></ion-icon>
-              <ion-label>{{ label }}</ion-label>
+              <ion-label>{{ label.title }}</ion-label>
             </ion-item>
           </ion-list>
         </ion-content>
@@ -71,12 +76,25 @@ import {
 } from 'ionicons/icons';
 import { useIonRouter } from '@ionic/vue';
 import { useRoute } from 'vue-router';
-import { ref, watch, onMounted, provide } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+
+import { useDatabase, Product } from '@/composables/useDatabase';
 
 const route = useRoute();
 const ionRouter = useIonRouter();
 
+const db = useDatabase();
 const selectedIndex = ref(0);
+
+const exportJson = async () => {
+  await db.exportJson();
+};
+const importJson = async () => {
+  await db.importJson();
+  // TODO: any seamless alternative to refresh the current view?
+  window.history.go();
+};
+
 const appPages = [
   {
     title: 'Venta',
@@ -91,7 +109,11 @@ const appPages = [
     mdIcon: paperPlaneSharp,
   },
 ];
-const labels = ['Family'];
+
+const labels = [
+  { title: 'Export', action: exportJson },
+  { title: 'Import', action: importJson },
+];
 
 watch(
   () => route.path,
@@ -125,55 +147,6 @@ onMounted(async () => {
     console.log(`StatusBar initialization error: ${err}`);
   }
 });
-
-// Sqlite
-import { getCurrentInstance } from 'vue';
-import { useSQLite } from 'vue-sqlite-hook';
-import { useState } from '@/composables/state';
-
-/* SQLite Global Variables*/
-
-// Only if you want to use the onProgressImport/Export events
-const { isJsonListeners, setIsJsonListeners } = useState(false);
-const { isModalOpen, setIsModalOpen } = useState(false);
-const { messageContent, setMessageContent } = useState('');
-provide('$isJsonListeners', { isJsonListeners, setIsJsonListeners });
-provide('$isModalOpen', { isModalOpen, setIsModalOpen });
-provide('$messageContent', { messageContent, setMessageContent });
-
-//[
-// const { isJsonListeners, setIsJsonListeners } = inject('$isJsonListeners');
-// const { isModalOpen, setIsModalOpen } = inject('$isModalOpen');
-// const { messageContent, setMessageContent } = inject('$messageContent');
-//]
-
-//  Existing Connections Store
-const [existConn, setExistConn] = useState(false);
-provide('$existingConn', { existConn: existConn, setExistConn: setExistConn });
-
-const onProgressImport = async (progress: string) => {
-  if (isJsonListeners.value) {
-    if (!isModalOpen.value) setIsModalOpen(true);
-    setMessageContent(messageContent.value.concat(`${progress}\n`));
-  }
-};
-const onProgressExport = async (progress: string) => {
-  if (isJsonListeners.value) {
-    if (!isModalOpen.value) setIsModalOpen(true);
-    setMessageContent(messageContent.value.concat(`${progress}\n`));
-  }
-};
-
-const app = getCurrentInstance();
-if (app != null) {
-  provide(
-    '$sqlite',
-    useSQLite({
-      onProgressImport,
-      onProgressExport,
-    })
-  );
-}
 </script>
 
 <style scoped>
