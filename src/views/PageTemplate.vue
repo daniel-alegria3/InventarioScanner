@@ -41,7 +41,7 @@ import {
 const props = withDefaults(
   defineProps<{
     title?: string;
-    fullscreen?: bolean;
+    fullscreen?: boolean;
   }>(),
   {
     title: 'Untitled Page',

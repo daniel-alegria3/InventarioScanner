@@ -2,13 +2,14 @@ import { modalController } from '@ionic/vue';
 
 import { ref } from 'vue';
 import ModalBarcodeScanner from '@/components/ModalBarcodeScanner.vue';
+import { Barcode } from '@capacitor-mlkit/barcode-scanning';
 
-export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
-  const barcodeToString = (barcodeData: any) => {
-    // data.value/format/type
-    return `${barcodeData.format}:${barcodeData.value}`;
-  };
+const barcodeToString = (barcode: Barcode) => {
+  // barcode.format/displayValue/valueType
+  return `${barcode.format}:${barcode.displayValue}`;
+};
 
+export function useBarcodeScanner() {
   const openBarcodeScanner = async () => {
     const modal = await modalController.create({
       component: ModalBarcodeScanner,
@@ -25,13 +26,17 @@ export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
     return null;
   };
 
+  return { openBarcodeScanner };
+}
+
+export function useBarcodeScannerMultiple(onScanned: (barcode: string) => void) {
   const openBarcodeScannerMultiple = async () => {
     const modal = await modalController.create({
       component: ModalBarcodeScanner,
       cssClass: 'barcode-scanning-modal',
       componentProps: {
-        onBarcodeScanned: (barcodeData: any) => {
-          onScanned(barcodeToString(barcodeData));
+        onBarcodeScanned: (barcode: Barcode) => {
+          onScanned(barcodeToString(barcode));
         },
       },
     });
@@ -41,5 +46,5 @@ export function useBarcodeScanner(onScanned?: (barcode: string) => void) {
     const { data, role } = await modal.onWillDismiss();
   };
 
-  return { openBarcodeScanner, openBarcodeScannerMultiple };
+  return { openBarcodeScannerMultiple };
 }

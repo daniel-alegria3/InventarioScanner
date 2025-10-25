@@ -39,7 +39,7 @@ import '@ionic/vue/css/palettes/dark.system.css';
 import './theme/variables.css';
 
 // SQLite plugin
-import { initializeSQLite } from './sqlite.ts';
+import { initializeSQLite } from './sqlite';
 
 // Vue app
 window.addEventListener('DOMContentLoaded', async () => {

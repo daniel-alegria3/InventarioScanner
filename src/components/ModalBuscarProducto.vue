@@ -72,7 +72,7 @@ const productos = ref<Product[]>([
   { id: 0, name: 'Pepsi', price: 2.0, barcode: null },
   { id: 1, name: 'Sprite', price: 2.5, barcode: null },
 ]);
-const selected_products = ref<number[]>([]);
+const selected_products = ref<Product[]>([]);
 
 const search_text = ref('');
 const filteredProductos = computed(() => {
@@ -80,7 +80,7 @@ const filteredProductos = computed(() => {
     return productos.value;
   }
   const search_lower = search_text.value.toLowerCase();
-  return productos.value.filter(() => p.name.toLowerCase().includes(search_lower));
+  return productos.value.filter((p) => p.name.toLowerCase().includes(search_lower));
 });
 
 onMounted(async () => {
@@ -88,7 +88,7 @@ onMounted(async () => {
 });
 
 const closeModal = async (prods: Product[] | null) => {
-  modalController.dismiss(prods, prods.length > 0 ? 'confirm' : 'cancel');
+  modalController.dismiss(prods, prods && prods.length > 0 ? 'confirm' : 'cancel');
 };
 </script>
 

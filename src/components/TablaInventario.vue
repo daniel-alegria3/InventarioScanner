@@ -6,7 +6,7 @@
         <!-- Encabezados de la tabla -->
         <ion-row class="header">
           <ion-col
-            :size="1"
+            :size="'1'"
             v-if="is_sel_mode_open"
             class="ion-display-inline-flex ion-justify-content-end ion-order-last"
           >
@@ -16,10 +16,12 @@
               @ionChange="toggleSelectAll"
             ></ion-checkbox>
           </ion-col>
-          <ion-col :size="is_sel_mode_open ? 8 : 9" class="ion-justify-content-start"
+          <ion-col
+            :size="is_sel_mode_open ? '8' : '9'"
+            class="ion-justify-content-start"
             >Producto</ion-col
           >
-          <ion-col :size="3" class="ion-justify-content-end ion-text-right"
+          <ion-col :size="'3'" class="ion-justify-content-end ion-text-right"
             >Precio</ion-col
           >
         </ion-row>
@@ -32,7 +34,7 @@
           :class="{ selected: isProductSelected(prod) }"
         >
           <ion-col
-            :size="1"
+            :size="'1'"
             v-if="is_sel_mode_open"
             class="ion-display-inline-flex ion-justify-content-end ion-order-last"
           >
@@ -42,10 +44,12 @@
               @ionChange="toggleProductSelection(prod)"
             ></ion-checkbox>
           </ion-col>
-          <ion-col :size="is_sel_mode_open ? 8 : 9" class="ion-justify-content-start">{{
-            prod.name
-          }}</ion-col>
-          <ion-col :size="3" class="ion-justify-content-end ion-text-right">{{
+          <ion-col
+            :size="is_sel_mode_open ? '8' : '9'"
+            class="ion-justify-content-start"
+            >{{ prod.name }}</ion-col
+          >
+          <ion-col :size="'3'" class="ion-justify-content-end ion-text-right">{{
             Number(prod.price).toFixed(2)
           }}</ion-col>
         </ion-row>
@@ -77,15 +81,15 @@ const props = withDefaults(
     products: Product[];
   }>(),
   {
-    products: [],
+    products: () => [],
   }
 );
 
-const selected_products = defineModel('selectedProducts', {
-  default: [],
+const selected_products = defineModel<Product[]>('selectedProducts', {
+  default: () => [],
   required: false,
 });
-const is_sel_mode_open = defineModel('isSelModeOpen', {
+const is_sel_mode_open = defineModel<boolean>('isSelModeOpen', {
   default: false,
   required: false,
 });
@@ -119,7 +123,7 @@ const enterSelectionMode = (producto: Product | null) => {
   if (!is_sel_mode_open.value) {
     is_sel_mode_open.value = true;
   }
-  if (producto && !isProductSelected(producto.id)) {
+  if (producto && !isProductSelected(producto)) {
     selected_products.value.push({ ...producto });
   }
 };
@@ -138,7 +142,7 @@ const toggleProductSelection = (producto: Product) => {
   }
 };
 
-const handleRowClick = async (producto, index) => {
+const handleRowClick = async (producto: Product, index: number) => {
   if (is_sel_mode_open.value) {
     toggleProductSelection(producto);
   } else {

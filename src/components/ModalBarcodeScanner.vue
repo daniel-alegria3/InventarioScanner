@@ -49,14 +49,15 @@ import {
   Barcode,
   BarcodeScanner,
   BarcodeFormat,
+  BarcodeValueType,
   LensFacing,
   StartScanOptions,
 } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
 
-export interface Barcode {
+export interface CodBarra {
   value: string;
-  format: BarcodeFormat;
+  format: BarcodeFormat[];
   type: BarcodeValueType;
 }
 
@@ -64,12 +65,11 @@ const props = withDefaults(
   defineProps<{
     lensFacing?: LensFacing;
     formats?: BarcodeFormat[];
-    barcode?: Barcode;
-    onBarcodeScanned?: (barcode: string) => void;
+    onBarcodeScanned?: (barcode: Barcode) => void;
   }>(),
   {
     lensFacing: LensFacing.Back,
-    formats: [
+    formats: () => [
       BarcodeFormat.Aztec,
       BarcodeFormat.Codabar,
       BarcodeFormat.Code39,
@@ -83,13 +83,12 @@ const props = withDefaults(
       BarcodeFormat.UpcA,
       BarcodeFormat.UpcE,
     ],
-    onBarcodeScanned: null,
   }
 );
 
 const squareElement = ref<HTMLDivElement | undefined>(undefined);
 const videoElement = ref<HTMLVideoElement | undefined>(undefined);
-const isWeb = ref<bool>(Capacitor.getPlatform() === 'web');
+const isWeb = ref<boolean>(Capacitor.getPlatform() === 'web');
 const isTorchAvailable = ref(false);
 const minZoomRatio = ref<number | undefined>(undefined);
 const maxZoomRatio = ref<number | undefined>(undefined);
@@ -111,7 +110,7 @@ onBeforeUnmount(async () => {
   await stopScan();
 });
 
-const setZoomRatio = (event) => {
+const setZoomRatio = (event: CustomEvent) => {
   if (!event.detail.value) return;
   BarcodeScanner.setZoomRatio({ zoomRatio: parseInt(event.detail.value, 10) });
 };
@@ -136,7 +135,7 @@ const startScan = async () => {
 
   await nextTick(); // Ensure elements are rendered before measuring
 
-  const squareBoundingRect = squareElement.value?.getBoundingClientRect();
+  const squareBoundingRect = squareElement.value!.getBoundingClientRect();
   const scaledRect = squareBoundingRect
     ? {
         left: squareBoundingRect.left * window.devicePixelRatio,
@@ -159,7 +158,7 @@ const startScan = async () => {
 
   // Controlled block to the listener from going off every frame that a barcode is on screen
   const ON_SCANNED_TIMEOUT = 500;
-  let barcode_scan_succesful: bolean = false;
+  let barcode_scan_succesful: boolean = false;
   let last_scan_time: number = Date.now();
   const colors = {
     ready: '#e2e8f0',
@@ -170,10 +169,10 @@ const startScan = async () => {
     // Reset the flag to block the listener
     if (barcode_scan_succesful && Date.now() - last_scan_time > ON_SCANNED_TIMEOUT) {
       barcode_scan_succesful = false;
-      squareElement.value.style.borderColor = colors.ready;
+      squareElement.value!.style.borderColor = colors.ready;
     }
   }, ON_SCANNED_TIMEOUT);
-  squareElement.value.style.borderColor = colors.ready;
+  squareElement.value!.style.borderColor = colors.ready;
 
   listener = await BarcodeScanner.addListener('barcodesScanned', async (event) => {
     last_scan_time = Date.now();
@@ -200,22 +199,16 @@ const startScan = async () => {
     }
 
     if (barcode_scan_succesful) {
-      squareElement.value.style.borderColor = colors.blocked;
+      squareElement.value!.style.borderColor = colors.blocked;
       return;
     }
     barcode_scan_succesful = true;
-    squareElement.value.style.borderColor = colors.detected;
-
-    const barcodeData = {
-      value: firstBarcode.displayValue,
-      format: firstBarcode.format,
-      type: firstBarcode.valueType,
-    } as Barcode;
+    squareElement.value!.style.borderColor = colors.detected;
 
     if (props.onBarcodeScanned) {
-      await props.onBarcodeScanned(barcodeData);
+      await props.onBarcodeScanned(firstBarcode);
     } else {
-      await closeModal(barcodeData);
+      await closeModal(firstBarcode);
     }
   });
 

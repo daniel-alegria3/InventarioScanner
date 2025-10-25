@@ -90,10 +90,10 @@ import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
 
 const db = useDatabase();
 const { openBarcodeScanner } = useBarcodeScanner();
-const barcode = ref<string>(null);
+const barcode = ref<string | null>(null);
 
 const productos = ref<Product[]>([]);
-const selected_products = ref<number[]>([]);
+const selected_products = ref<Product[]>([]);
 const is_sel_mode_open = ref<boolean>(false);
 
 const search_text = ref<string>('');
@@ -144,6 +144,8 @@ watch(barcode, async (new_barcode) => {
         // TODO: handle two or more products with the same barcode (ERROR)
         console.error('Bad!');
       }
+    } else {
+      await agregarProducto();
     }
   }
 });
@@ -175,7 +177,7 @@ const agregarProducto = async () => {
   }
 };
 
-const updateProduct = async (producto) => {
+const updateProduct = async (producto: Product) => {
   const modal = await modalController.create({
     component: ModalFormularioProducto,
     componentProps: {
@@ -233,7 +235,7 @@ function tryCatch() {
   return did_catch;
 }
 
-const onBackButton = (processNextHandler) => {
+const onBackButton = (processNextHandler: () => void) => {
   if (!tryCatch()) {
     processNextHandler();
   }

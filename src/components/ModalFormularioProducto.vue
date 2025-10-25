@@ -99,27 +99,28 @@ const props = withDefaults(
     type?: 'add' | 'update';
     product?: Product | null;
   }>(),
-  {
-    type: null,
-    product: null,
-  }
+  {}
 );
 
 //------------------------------------------------------------------------------
 
-const barcode = ref<string>(null);
+const barcode = ref<string | null>(null);
 
 const ableDismiss = ref<boolean>(true);
-const form_data = ref<Product>({ id: null, name: '', price: null, barcode: null });
+const form_data = ref<Product>({} as Product);
 
-const isFormIncomplete: bolean = computed(() => {
-  return form_data.value.name === '' || typeof form_data.value.price === Number;
+const isFormIncomplete = computed(() => {
+  return (
+    form_data.value.name === '' ||
+    typeof form_data.value.price !== 'number' ||
+    form_data.value.price < 0
+  );
 });
 
-const form_has_changed: boolean = computed(() => {
+const form_has_changed = computed(() => {
   return;
 });
-const modal_vars: Object = computed(() => {
+const modal_vars = computed(() => {
   let title, confirm;
   if (props.type === 'add') {
     title = 'Nuevo Producto';
@@ -151,9 +152,8 @@ watch(barcode, async (new_barcode) => {
 });
 
 onMounted(async () => {
-  const prod = props.product;
-  if (props.type === 'update') {
-    form_data.value = prod;
+  if (props.type === 'update' && props.product) {
+    form_data.value = props.product;
   }
   /*
   const modal = await modalController.getTop();
@@ -187,8 +187,10 @@ const handleSubmit = async () => {
 
 const cerrarModal = async (producto: Product | null) => {
   const modal = await modalController.getTop();
-  modal.canDismiss = true;
-  modal.dismiss(producto, producto ? 'confirm' : 'cancel');
+  if (modal) {
+    modal.canDismiss = true;
+    modal.dismiss(producto, producto ? 'confirm' : 'cancel');
+  }
 };
 
 //-------------------------------- { Niceties } --------------------------------

@@ -124,7 +124,7 @@ import {
 } from 'ionicons/icons';
 import { ref, watch } from 'vue';
 
-import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
+import { useBarcodeScannerMultiple } from '@/composables/useBarcodeScanner';
 import { useDatabase } from '@/composables/useDatabase';
 
 import PageTemplate from '@/views/PageTemplate.vue';
@@ -143,12 +143,12 @@ interface VentaItem {
 
 //------------------------------------------------------------------------------
 
-const ventaItems = ref<Product[]>([]);
+const ventaItems = ref<VentaItem[]>([]);
 const precio_total = ref<number>(0);
 
 const db = useDatabase();
 
-const barcodeScaneado = async (barcode) => {
+const barcodeScaneado = async (barcode: string) => {
   // TODO: handle one or more products with same barcode?
   const prods = await db.getProductsByBarcode(barcode);
 
@@ -161,7 +161,7 @@ const barcodeScaneado = async (barcode) => {
   }
 };
 
-const { openBarcodeScannerMultiple } = useBarcodeScanner(barcodeScaneado);
+const { openBarcodeScannerMultiple } = useBarcodeScannerMultiple(barcodeScaneado);
 
 const openBuscadorProducto = async () => {
   const modal = await modalController.create({
@@ -190,7 +190,7 @@ const calcularTotal = () => {
   }, 0);
 };
 
-const agregarProducto = (product) => {
+const agregarProducto = (product: Product) => {
   const index = ventaItems.value.findIndex((vi) => vi.product.id === product.id);
   if (index > -1) {
     ventaItems.value[index].quantity++;
