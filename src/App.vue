@@ -131,6 +131,12 @@ watch(
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
 onMounted(async () => {
+  // Mobile Browser debugging
+  if (route.query.eruda !== undefined) {
+    const eruda = (await import('eruda')).default;
+    eruda.init();
+  }
+
   // Control the color of the status bar on Android
   try {
     if (Capacitor.isNativePlatform()) {
