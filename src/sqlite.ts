@@ -17,6 +17,10 @@ export async function initializeSQLite(app: App) {
     if (platform === 'web') {
       // Create the 'jeep-sqlite' Stencil component
       const jeepSqliteEl = document.createElement('jeep-sqlite');
+
+      const baseUrl = import.meta.env.BASE_URL;
+      jeepSqliteEl.wasmPath = `${baseUrl}assets`.replace(/\/\//g, '/');
+
       document.body.appendChild(jeepSqliteEl);
       await customElements.whenDefined('jeep-sqlite');
 
