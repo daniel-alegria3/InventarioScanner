@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -20,6 +20,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Ionic App" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!-- SPA redirect handler - restores URL after 404 redirect -->
+    <script>
+      (function () {
+        var redirect = sessionStorage.getItem('redirect');
+        sessionStorage.removeItem('redirect');
+        if (redirect && redirect !== location.pathname) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
     <script type="module" crossorigin src="/InventarioScanner/assets/index-B80CaN8n.js"></script>
     <link rel="stylesheet" crossorigin href="/InventarioScanner/assets/index-C4qShaG1.css">
     <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script>
@@ -32,6 +43,4 @@
     <script nomodule crossorigin id="vite-legacy-polyfill" src="assets/polyfills-legacy-BJTrnrgp.js"></script>
     <script nomodule crossorigin id="vite-legacy-entry" data-src="assets/index-legacy-DrG7Ndf3.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
   </body>
-
 </html>
-
