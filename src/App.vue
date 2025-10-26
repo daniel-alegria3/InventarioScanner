@@ -76,7 +76,7 @@ import {
 } from 'ionicons/icons';
 import { useIonRouter } from '@ionic/vue';
 import { useRoute } from 'vue-router';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, nextTick } from 'vue';
 
 import { useDatabase, Product } from '@/composables/useDatabase';
 
@@ -140,6 +140,7 @@ onMounted(async () => {
   // Control the color of the status bar on Android
   try {
     if (Capacitor.isNativePlatform()) {
+      await nextTick();
       const themeColor = getComputedStyle(document.documentElement)
         .getPropertyValue('--ion-toolbar-background')
         .trim();

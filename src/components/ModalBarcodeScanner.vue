@@ -97,7 +97,7 @@ let listener: any = null;
 let timeoutChecker: any = null;
 
 onMounted(async () => {
-  nextTick();
+  await nextTick();
   if (!isWeb.value) {
     const { available } = await BarcodeScanner.isTorchAvailable();
     isTorchAvailable.value = available;
@@ -127,13 +127,13 @@ const startScan = async () => {
   // Hide everything behind the modal (see `src/theme/variables.scss`)
   document.querySelector('body')?.classList.add('barcode-scanning-active');
 
+  await nextTick(); // Ensure elements are rendered before measuring
+
   const options: StartScanOptions = {
     formats: props.formats,
     lensFacing: props.lensFacing,
     videoElement: isWeb.value ? videoElement.value : undefined,
   };
-
-  await nextTick(); // Ensure elements are rendered before measuring
 
   const squareBoundingRect = squareElement.value!.getBoundingClientRect();
   const scaledRect = squareBoundingRect
@@ -222,7 +222,7 @@ const startScan = async () => {
 const stopScan = async () => {
   // Show everything behind the modal again
   document.querySelector('body')?.classList.remove('barcode-scanning-active');
-  listener.remove();
+  if (listener) listener.remove();
   clearInterval(timeoutChecker);
   await BarcodeScanner.stopScan();
 };

@@ -33,7 +33,7 @@
 
     <!-- Botón flotante para agregar productos -->
     <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-      <ion-fab-button v-if="!is_sel_mode_open" @click="agregarProducto">
+      <ion-fab-button v-if="!is_sel_mode_open" @click="agregarProducto(null)">
         <ion-icon :icon="addOutline" />
       </ion-fab-button>
     </ion-fab>
@@ -77,7 +77,7 @@ import {
   onIonViewDidEnter,
 } from '@ionic/vue';
 import { addOutline, barcodeOutline, trash } from 'ionicons/icons';
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { ref, watch, computed, onMounted, nextTick } from 'vue';
 
 import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
 import { useDatabase, Product } from '@/composables/useDatabase';
@@ -90,7 +90,6 @@ import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
 
 const db = useDatabase();
 const { openBarcodeScanner } = useBarcodeScanner();
-const barcode = ref<string | null>(null);
 
 const productos = ref<Product[]>([]);
 const selected_products = ref<Product[]>([]);
@@ -133,43 +132,43 @@ watch(
   }
 );
 
-watch(barcode, async (new_barcode) => {
-  if (new_barcode !== null) {
-    const prods = await db.getProductsByBarcode(new_barcode);
+//------------------------------------------------------------------------------
+
+const buscarPorBarcode = async () => {
+  const barcode = await openBarcodeScanner();
+
+  if (barcode !== null) {
+    const prods = await db.getProductsByBarcode(barcode);
 
     if (prods) {
       if (prods.length === 1) {
         await updateProduct(prods[0]);
+      } else if (prods.length === 0) {
+        await agregarProducto({ barcode: barcode } as Product);
       } else {
         // TODO: handle two or more products with the same barcode (ERROR)
-        console.error('Bad!');
+        console.warn('More than one product with the same barcode');
       }
-    } else {
-      await agregarProducto();
     }
   }
-});
-
-//------------------------------------------------------------------------------
-const buscarPorBarcode = async () => {
-  barcode.value = await openBarcodeScanner();
 };
 
 const recargarProductos = async () => {
   productos.value = await db.getProducts();
 };
 
-const agregarProducto = async () => {
+const agregarProducto = async (producto: Product | null) => {
   const modal = await modalController.create({
     component: ModalFormularioProducto,
     componentProps: {
       type: 'add',
+      product: { ...producto },
     },
   });
 
   modal.present();
 
-  const { data, role } = await modal.onWillDismiss();
+  const { data, role } = await modal.onDidDismiss();
 
   if (data) {
     await db.addProduct(data);
@@ -188,7 +187,7 @@ const updateProduct = async (producto: Product) => {
 
   modal.present();
 
-  const { data, role } = await modal.onWillDismiss();
+  const { data, role } = await modal.onDidDismiss();
 
   if (data) {
     await db.updateProduct(data.id, data);

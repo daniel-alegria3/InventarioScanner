@@ -96,10 +96,12 @@ const { openBarcodeScanner } = useBarcodeScanner();
 
 const props = withDefaults(
   defineProps<{
-    type?: 'add' | 'update';
+    type: 'add' | 'update';
     product?: Product | null;
   }>(),
-  {}
+  {
+    product: null,
+  }
 );
 
 //------------------------------------------------------------------------------
@@ -112,7 +114,7 @@ const form_data = ref<Product>({} as Product);
 const isFormIncomplete = computed(() => {
   return (
     form_data.value.name === '' ||
-    typeof form_data.value.price !== 'number' ||
+    form_data.value.price == null || // use == to check for null and undefined
     form_data.value.price < 0
   );
 });
@@ -152,7 +154,7 @@ watch(barcode, async (new_barcode) => {
 });
 
 onMounted(async () => {
-  if (props.type === 'update' && props.product) {
+  if (props.product) {
     form_data.value = props.product;
   }
   /*
@@ -175,7 +177,7 @@ const handleSubmit = async () => {
   if (isFormIncomplete.value) {
     const alert = await alertController.create({
       header: 'Error',
-      message: 'Nombre y Precio son obligatorios',
+      message: 'Nombre y/o Precio invalidos',
       buttons: ['OK'],
     });
     await alert.present();

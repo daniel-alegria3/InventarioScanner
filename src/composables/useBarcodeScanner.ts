@@ -18,7 +18,7 @@ export function useBarcodeScanner() {
 
     modal.present();
 
-    const { data, role } = await modal.onWillDismiss();
+    const { data, role } = await modal.onDidDismiss();
 
     if (data) {
       return barcodeToString(data);
@@ -43,7 +43,7 @@ export function useBarcodeScannerMultiple(onScanned: (barcode: string) => void) 
 
     modal.present();
 
-    const { data, role } = await modal.onWillDismiss();
+    const { data, role } = await modal.onDidDismiss();
   };
 
   return { openBarcodeScannerMultiple };
