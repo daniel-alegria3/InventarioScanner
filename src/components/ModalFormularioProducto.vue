@@ -132,7 +132,7 @@ const modal_vars = computed(() => {
     confirm = 'Actualizar';
   } else {
     // TODO: Throw error, idk
-    console.assert(0, `El prop '${props.type}' no es valido`);
+    console.assert(false, `El prop '${props.type}' no es valido`);
   }
   return { title: title, confirm: confirm };
 });
