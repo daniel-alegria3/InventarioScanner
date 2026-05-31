@@ -1,4 +1,4 @@
-import { SQLiteDBConnection, SQLiteHook } from 'vue-sqlite-hook/dist';
+import { SQLiteDBConnection, SQLiteConnection } from '@capacitor-community/sqlite';
 // TODO: understand how to setup this from the main.ts, App.vue, etc. Clean it up
 
 import { Capacitor } from '@capacitor/core';
@@ -19,12 +19,12 @@ export interface Product {
 }
 
 export class DatabaseService {
-  private sqlite: SQLiteHook;
+  private sqlite: SQLiteConnection;
   private db_name: string;
   private db!: SQLiteDBConnection;
   private initPromise: Promise<void>; // To check that only one connection exists
 
-  constructor(sqlite: SQLiteHook, db_name: string) {
+  constructor(sqlite: SQLiteConnection, db_name: string) {
     this.sqlite = sqlite;
     this.db_name = db_name;
     this.initPromise = this.init();

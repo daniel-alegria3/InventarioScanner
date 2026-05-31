@@ -1,6 +1,6 @@
 import { inject } from 'vue';
 import { DatabaseService, Product } from '@/services/DatabaseService';
-import { SQLiteHook } from 'vue-sqlite-hook/dist';
+import { SQLiteConnection } from '@capacitor-community/sqlite';
 
 let dbInstance: DatabaseService | null = null;
 
@@ -9,7 +9,7 @@ export function useDatabase(): DatabaseService {
     return dbInstance;
   }
 
-  const sqlite = inject<SQLiteHook>('sqlite');
+  const sqlite = inject<SQLiteConnection>('sqlite');
   if (!sqlite) {
     throw new Error('SQLite not provided. Make sure to provide "sqlite" in your app.');
   }
