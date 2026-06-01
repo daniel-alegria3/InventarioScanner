@@ -65,7 +65,7 @@ import {
   IonNote,
   IonRouterOutlet,
   IonSplitPane,
-} from '@ionic/vue';
+} from "@ionic/vue";
 import {
   bookmarkOutline,
   bookmarkSharp,
@@ -73,12 +73,12 @@ import {
   mailSharp,
   paperPlaneOutline,
   paperPlaneSharp,
-} from 'ionicons/icons';
-import { useIonRouter } from '@ionic/vue';
-import { useRoute } from 'vue-router';
-import { ref, watch, onMounted, nextTick } from 'vue';
+} from "ionicons/icons";
+import { useIonRouter } from "@ionic/vue";
+import { useRoute } from "vue-router";
+import { ref, watch, onMounted, nextTick } from "vue";
 
-import { useDatabase, Product } from '@/composables/useDatabase';
+import { useDatabase, Product } from "@/composables/useDatabase";
 
 const route = useRoute();
 const ionRouter = useIonRouter();
@@ -97,43 +97,41 @@ const importJson = async () => {
 
 const appPages = [
   {
-    title: 'Venta',
-    url: '/venta',
+    title: "Venta",
+    url: "/venta",
     iosIcon: mailOutline,
     mdIcon: mailSharp,
   },
   {
-    title: 'Inventario',
-    url: '/inventario',
+    title: "Inventario",
+    url: "/inventario",
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp,
   },
 ];
 
 const labels = [
-  { title: 'Export', action: exportJson },
-  { title: 'Import', action: importJson },
+  { title: "Export", action: exportJson },
+  { title: "Import", action: importJson },
 ];
 
 watch(
   () => route.path,
   (newPath) => {
-    const index = appPages.findIndex(
-      (page) => page.url.toLowerCase() === newPath.toLowerCase()
-    );
+    const index = appPages.findIndex((page) => page.url.toLowerCase() === newPath.toLowerCase());
     if (index !== -1) {
       selectedIndex.value = index;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { Capacitor } from "@capacitor/core";
 onMounted(async () => {
   // Mobile Browser debugging
   if (import.meta.env.DEV && route.query.eruda !== undefined) {
-    const eruda = (await import('eruda')).default;
+    const eruda = (await import("eruda")).default;
     eruda.init();
   }
 
@@ -142,7 +140,7 @@ onMounted(async () => {
     if (Capacitor.isNativePlatform()) {
       await nextTick();
       const themeColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--ion-toolbar-background')
+        .getPropertyValue("--ion-toolbar-background")
         .trim();
       if (themeColor) {
         await StatusBar.setStyle({ style: Style.Default });

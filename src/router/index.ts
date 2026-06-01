@@ -1,19 +1,19 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import Venta from '@/views/Venta.vue';
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+import { RouteRecordRaw } from "vue-router";
+import Venta from "@/views/Venta.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '',
-    redirect: '/venta',
+    path: "",
+    redirect: "/venta",
   },
   {
-    path: '/venta',
+    path: "/venta",
     component: Venta,
   },
   {
-    path: '/inventario',
-    component: () => import('@/views/Inventario.vue'),
+    path: "/inventario",
+    component: () => import("@/views/Inventario.vue"),
   },
 ];
 

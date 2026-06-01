@@ -1,7 +1,7 @@
-import type { App } from 'vue';
-import { Capacitor } from '@capacitor/core';
-import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
-import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
+import type { App } from "vue";
+import { Capacitor } from "@capacitor/core";
+import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
+import { defineCustomElements as jeepSqlite } from "jeep-sqlite/loader";
 
 jeepSqlite(window);
 
@@ -11,14 +11,14 @@ export async function initializeSQLite(app: App) {
   const platform = Capacitor.getPlatform();
 
   try {
-    if (platform === 'web') {
-      const jeepSqliteEl = document.createElement('jeep-sqlite');
+    if (platform === "web") {
+      const jeepSqliteEl = document.createElement("jeep-sqlite");
 
       const baseUrl = import.meta.env.BASE_URL;
-      jeepSqliteEl.wasmPath = `${baseUrl}assets`.replace(/\/\//g, '/');
+      jeepSqliteEl.wasmPath = `${baseUrl}assets`.replace(/\/\//g, "/");
 
       document.body.appendChild(jeepSqliteEl);
-      await customElements.whenDefined('jeep-sqlite');
+      await customElements.whenDefined("jeep-sqlite");
 
       await sqlite.initWebStore();
     }
@@ -30,16 +30,16 @@ export async function initializeSQLite(app: App) {
       console.info(progress);
     };
 
-    if (platform !== 'electron') {
-      (CapacitorSQLite as any).addListener('sqliteImportProgressEvent', (e: any) => {
+    if (platform !== "electron") {
+      (CapacitorSQLite as any).addListener("sqliteImportProgressEvent", (e: any) => {
         onProgressImport(e.progress);
       });
-      (CapacitorSQLite as any).addListener('sqliteExportProgressEvent', (e: any) => {
+      (CapacitorSQLite as any).addListener("sqliteExportProgressEvent", (e: any) => {
         onProgressExport(e.progress);
       });
     }
 
-    app.provide('sqlite', sqlite);
+    app.provide("sqlite", sqlite);
   } catch (err) {
     console.error(`SQLite initialization error: ${err}`);
     throw new Error(`Failed to initialize SQLite: ${err}`);

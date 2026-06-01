@@ -5,12 +5,7 @@
         <ion-title>Buscar Productos</ion-title>
       </ion-toolbar>
       <ion-toolbar>
-        <ion-input
-          v-model="search_text"
-          fill="outline"
-          placeholder="Buscar..."
-          type="text"
-        >
+        <ion-input v-model="search_text" fill="outline" placeholder="Buscar..." type="text">
         </ion-input>
       </ion-toolbar>
     </ion-header>
@@ -57,26 +52,26 @@ import {
   IonIcon,
   alertController,
   modalController,
-} from '@ionic/vue';
-import { checkmark } from 'ionicons/icons';
-import { ref, computed, onMounted } from 'vue';
-import { useDatabase } from '@/composables/useDatabase';
+} from "@ionic/vue";
+import { checkmark } from "ionicons/icons";
+import { ref, computed, onMounted } from "vue";
+import { useDatabase } from "@/composables/useDatabase";
 
-import { Product } from '@/services/DatabaseService';
-import TablaInventario from '@/components/TablaInventario.vue';
+import { Product } from "@/services/DatabaseService";
+import TablaInventario from "@/components/TablaInventario.vue";
 
 //------------------------------------------------------------------------------
 
 const db = useDatabase();
 const productos = ref<Product[]>([
-  { id: 0, name: 'Pepsi', price: 2.0, barcode: null },
-  { id: 1, name: 'Sprite', price: 2.5, barcode: null },
+  { id: 0, name: "Pepsi", price: 2.0, barcode: null },
+  { id: 1, name: "Sprite", price: 2.5, barcode: null },
 ]);
 const selected_products = ref<Product[]>([]);
 
-const search_text = ref('');
+const search_text = ref("");
 const filteredProductos = computed(() => {
-  if (search_text.value.trim() === '') {
+  if (search_text.value.trim() === "") {
     return productos.value;
   }
   const search_lower = search_text.value.toLowerCase();
@@ -88,7 +83,7 @@ onMounted(async () => {
 });
 
 const closeModal = async (prods: Product[] | null) => {
-  modalController.dismiss(prods, prods && prods.length > 0 ? 'confirm' : 'cancel');
+  modalController.dismiss(prods, prods && prods.length > 0 ? "confirm" : "cancel");
 };
 </script>
 

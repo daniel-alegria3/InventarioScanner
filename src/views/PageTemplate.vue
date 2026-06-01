@@ -36,7 +36,7 @@ import {
   IonButtons,
   IonMenuButton,
   IonContent,
-} from '@ionic/vue';
+} from "@ionic/vue";
 
 const props = withDefaults(
   defineProps<{
@@ -44,9 +44,9 @@ const props = withDefaults(
     fullscreen?: boolean;
   }>(),
   {
-    title: 'Untitled Page',
+    title: "Untitled Page",
     fullscreen: true,
-  }
+  },
 );
 </script>
 

@@ -13,18 +13,9 @@
           </ion-row>
 
           <!-- Filas dinámicas -->
-          <ion-row
-            v-for="(item, index) in ventaItems"
-            :key="index"
-            class="ion-align-items-center"
-          >
+          <ion-row v-for="(item, index) in ventaItems" :key="index" class="ion-align-items-center">
             <ion-col size="1" class="ion-text-center">
-              <ion-button
-                size="small"
-                color="danger"
-                @click="deleteVentaItem(item)"
-                fill="clear"
-              >
+              <ion-button size="small" color="danger" @click="deleteVentaItem(item)" fill="clear">
                 <ion-icon slot="icon-only" :icon="close"></ion-icon>
               </ion-button>
             </ion-col>
@@ -114,21 +105,15 @@ import {
   IonIcon,
   IonBadge,
   modalController,
-} from '@ionic/vue';
-import {
-  search,
-  cash,
-  close,
-  caretBackOutline,
-  caretForwardOutline,
-} from 'ionicons/icons';
-import { ref, watch } from 'vue';
+} from "@ionic/vue";
+import { search, cash, close, caretBackOutline, caretForwardOutline } from "ionicons/icons";
+import { ref, watch } from "vue";
 
-import { useBarcodeScannerMultiple } from '@/composables/useBarcodeScanner';
-import { useDatabase } from '@/composables/useDatabase';
+import { useBarcodeScannerMultiple } from "@/composables/useBarcodeScanner";
+import { useDatabase } from "@/composables/useDatabase";
 
-import PageTemplate from '@/views/PageTemplate.vue';
-import ModalBuscarProducto from '@/components/ModalBuscarProducto.vue';
+import PageTemplate from "@/views/PageTemplate.vue";
+import ModalBuscarProducto from "@/components/ModalBuscarProducto.vue";
 
 interface Product {
   id: number;
@@ -173,7 +158,7 @@ const openBuscadorProducto = async () => {
   const { data, role } = await modal.onWillDismiss();
 
   if (data) {
-    console.log('Selected products: ', data);
+    console.log("Selected products: ", data);
 
     for (const product of data) {
       agregarProducto(product);
@@ -225,8 +210,7 @@ const cancelarVenta = () => {
 };
 
 const playScannerBeep = () => {
-  const audioContext = new (window.AudioContext ||
-    (window as any).webkitAudioContext)();
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
 
@@ -234,7 +218,7 @@ const playScannerBeep = () => {
   gainNode.connect(audioContext.destination);
 
   oscillator.frequency.value = 2400;
-  oscillator.type = 'square';
+  oscillator.type = "square";
 
   gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
@@ -244,8 +228,7 @@ const playScannerBeep = () => {
 };
 
 const playErrorBeep = () => {
-  const audioContext = new (window.AudioContext ||
-    (window as any).webkitAudioContext)();
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
 
@@ -253,7 +236,7 @@ const playErrorBeep = () => {
   gainNode.connect(audioContext.destination);
 
   oscillator.frequency.value = 300;
-  oscillator.type = 'square';
+  oscillator.type = "square";
 
   gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);

@@ -1,13 +1,13 @@
-import { SQLiteDBConnection, SQLiteConnection } from '@capacitor-community/sqlite';
+import { SQLiteDBConnection, SQLiteConnection } from "@capacitor-community/sqlite";
 // TODO: understand how to setup this from the main.ts, App.vue, etc. Clean it up
 
-import { Capacitor } from '@capacitor/core';
-import { Share } from '@capacitor/share';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { FilePicker } from '@capawesome/capacitor-file-picker';
+import { Capacitor } from "@capacitor/core";
+import { Share } from "@capacitor/share";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+import { FilePicker } from "@capawesome/capacitor-file-picker";
 // TODO: learn and clean this up
 
-import { db_inventario_schema } from '@/utils/sqlite-schemas';
+import { db_inventario_schema } from "@/utils/sqlite-schemas";
 
 const platform = Capacitor.getPlatform();
 
@@ -46,13 +46,7 @@ export class DatabaseService {
     if (ret.result && isConn) {
       this.db = await this.sqlite.retrieveConnection(this.db_name, false);
     } else {
-      this.db = await this.sqlite.createConnection(
-        this.db_name,
-        false,
-        'no-encryption',
-        1,
-        false
-      );
+      this.db = await this.sqlite.createConnection(this.db_name, false, "no-encryption", 1, false);
     }
 
     await this.db.open();
@@ -103,7 +97,7 @@ export class DatabaseService {
         SELECT id, name, price, barcode
         FROM Product
         WHERE sql_deleted = 0;
-      `
+      `,
     );
     return res.values as Product[];
   }
@@ -117,7 +111,7 @@ export class DatabaseService {
         WHERE name LIKE ?
         AND sql_deleted = 0;
       `,
-      [`%${name}%`]
+      [`%${name}%`],
     );
     return res.values as Product[];
   }
@@ -131,7 +125,7 @@ export class DatabaseService {
         WHERE barcode = ?
         AND sql_deleted = 0;
       `,
-      [barcode]
+      [barcode],
     );
     return res.values as Product[];
   }
@@ -143,14 +137,14 @@ export class DatabaseService {
         INSERT INTO Product (name, price, barcode)
         VALUES (?, ?, ?);
       `,
-      this.product_to_array(product)
+      this.product_to_array(product),
     );
     await this.check_run_response(res);
   }
 
   async removeProduct(id: number): Promise<void> {
     await this.ensureInitialized();
-    const res = await this.db.run('DELETE FROM Product WHERE id = ?', [id]);
+    const res = await this.db.run("DELETE FROM Product WHERE id = ?", [id]);
     await this.check_run_response(res);
   }
 
@@ -158,7 +152,7 @@ export class DatabaseService {
     await this.ensureInitialized();
 
     const statements = ids.map((id) => ({
-      statement: 'DELETE FROM Product WHERE id = ?',
+      statement: "DELETE FROM Product WHERE id = ?",
       values: [id],
     }));
     const res = await this.db.executeSet(statements);
@@ -173,7 +167,7 @@ export class DatabaseService {
         SET name = ?, price = ?, barcode = ?
         WHERE id = ?
       `,
-      this.product_to_array(product).concat([id])
+      this.product_to_array(product).concat([id]),
     );
     await this.check_run_response(res);
   }
@@ -184,7 +178,7 @@ export class DatabaseService {
       throw new Error(`Error: sqlite query failed`);
     }
     // WARN: this is essential
-    if (platform === 'web') {
+    if (platform === "web") {
       await this.sqlite.saveToStore(this.db_name);
     }
   }
@@ -193,7 +187,7 @@ export class DatabaseService {
     return [
       product.name,
       product.price,
-      (product.barcode ?? '').trim() === '' ? null : product.barcode,
+      (product.barcode ?? "").trim() === "" ? null : product.barcode,
     ];
   }
 
@@ -215,20 +209,20 @@ export class DatabaseService {
     try {
       await Filesystem.requestPermissions();
 
-      const jsonData = await this.db.exportToJson('full');
+      const jsonData = await this.db.exportToJson("full");
 
       const jsonDataString = JSON.stringify(
         // Set this up now to make this.importJson non-overwritable
-        { ...jsonData.export, mode: 'partial' },
+        { ...jsonData.export, mode: "partial" },
         null,
-        2
+        2,
       );
       const filename = `inventario-scanner-${this.db_name}-${Date.now()}.json`;
 
-      if (platform === 'web') {
-        const blob = new Blob([jsonDataString], { type: 'application/json' });
+      if (platform === "web") {
+        const blob = new Blob([jsonDataString], { type: "application/json" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
@@ -246,17 +240,17 @@ export class DatabaseService {
         });
 
         await Share.share({
-          title: 'Exportar Database',
+          title: "Exportar Database",
           text: `Exportar '${this.db_name}'`,
           url: saved.uri,
-          dialogTitle: 'Compartir Backup',
+          dialogTitle: "Compartir Backup",
         });
       }
 
       await this.db.setSyncDate(new Date().toISOString());
       await this.db.deleteExportedRows();
     } catch (error) {
-      console.error('Export failed/canceled:', error);
+      console.error("Export failed/canceled:", error);
     }
   }
 
@@ -264,7 +258,7 @@ export class DatabaseService {
     await this.ensureInitialized();
     try {
       const result = await FilePicker.pickFiles({
-        types: ['application/json'],
+        types: ["application/json"],
         limit: 1,
       });
 
@@ -272,14 +266,14 @@ export class DatabaseService {
         const file = result.files[0];
         let jsonDataString: string;
 
-        if (platform === 'web') {
+        if (platform === "web") {
           if (!file.blob) {
-            throw new Error('No file data available');
+            throw new Error("No file data available");
           }
           jsonDataString = await file.blob.text();
         } else {
           if (!file.path) {
-            throw new Error('No file path available');
+            throw new Error("No file path available");
           }
           const contents = await Filesystem.readFile({
             path: file.path,
@@ -295,7 +289,7 @@ export class DatabaseService {
         await this.sqlite.importFromJson(jsonDataString);
         await this.init();
 
-        if (platform === 'web') {
+        if (platform === "web") {
           await this.sqlite.saveToStore(this.db_name);
         }
 
@@ -303,7 +297,7 @@ export class DatabaseService {
         await this.db.deleteExportedRows();
       }
     } catch (error) {
-      console.log('Import failed/canceled', error);
+      console.log("Import failed/canceled", error);
     }
   }
 }

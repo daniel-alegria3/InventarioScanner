@@ -16,14 +16,10 @@
               @ionChange="toggleSelectAll"
             ></ion-checkbox>
           </ion-col>
-          <ion-col
-            :size="is_sel_mode_open ? '8' : '9'"
-            class="ion-justify-content-start"
+          <ion-col :size="is_sel_mode_open ? '8' : '9'" class="ion-justify-content-start"
             >Producto</ion-col
           >
-          <ion-col :size="'3'" class="ion-justify-content-end ion-text-right"
-            >Precio</ion-col
-          >
+          <ion-col :size="'3'" class="ion-justify-content-end ion-text-right">Precio</ion-col>
         </ion-row>
 
         <!-- Filas dinámicas -->
@@ -44,11 +40,9 @@
               @ionChange="toggleProductSelection(prod)"
             ></ion-checkbox>
           </ion-col>
-          <ion-col
-            :size="is_sel_mode_open ? '8' : '9'"
-            class="ion-justify-content-start"
-            >{{ prod.name }}</ion-col
-          >
+          <ion-col :size="is_sel_mode_open ? '8' : '9'" class="ion-justify-content-start">{{
+            prod.name
+          }}</ion-col>
           <ion-col :size="'3'" class="ion-justify-content-end ion-text-right">{{
             Number(prod.price).toFixed(2)
           }}</ion-col>
@@ -68,11 +62,11 @@ import {
   IonCol,
   alertController,
   modalController,
-} from '@ionic/vue';
-import { ref, watch, computed } from 'vue';
+} from "@ionic/vue";
+import { ref, watch, computed } from "vue";
 
-import { Product } from '@/services/DatabaseService';
-import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
+import { Product } from "@/services/DatabaseService";
+import ModalFormularioProducto from "@/components/ModalFormularioProducto.vue";
 
 //------------------------------------------------------------------------------
 
@@ -82,14 +76,14 @@ const props = withDefaults(
   }>(),
   {
     products: () => [],
-  }
+  },
 );
 
-const selected_products = defineModel<Product[]>('selectedProducts', {
+const selected_products = defineModel<Product[]>("selectedProducts", {
   default: () => [],
   required: false,
 });
-const is_sel_mode_open = defineModel<boolean>('isSelModeOpen', {
+const is_sel_mode_open = defineModel<boolean>("isSelModeOpen", {
   default: false,
   required: false,
 });
@@ -101,10 +95,7 @@ const emit = defineEmits<{
 //------------------------------------------------------------------------------
 
 const areAllSelected = computed(() => {
-  return (
-    props.products.length > 0 &&
-    selected_products.value.length === props.products.length
-  );
+  return props.products.length > 0 && selected_products.value.length === props.products.length;
 });
 
 const isProductSelected = (producto: Product) => {
@@ -146,7 +137,7 @@ const handleRowClick = async (producto: Product, index: number) => {
   if (is_sel_mode_open.value) {
     toggleProductSelection(producto);
   } else {
-    emit('normModeRowClick', producto);
+    emit("normModeRowClick", producto);
   }
 };
 </script>

@@ -36,13 +36,8 @@
                 :color="form_data.barcode ? 'success' : 'medium'"
                 fill="outline"
               >
-                {{ form_data.barcode || 'Cod. Barra' }}
-                <ion-icon
-                  slot="end"
-                  aria-hidden="true"
-                  :ios="barcodeOutline"
-                  :md="barcodeSharp"
-                />
+                {{ form_data.barcode || "Cod. Barra" }}
+                <ion-icon slot="end" aria-hidden="true" :ios="barcodeOutline" :md="barcodeSharp" />
               </ion-button>
             </ion-col>
           </ion-row>
@@ -86,22 +81,22 @@ import {
   modalController,
   onIonViewDidEnter,
   useBackButton,
-} from '@ionic/vue';
-import { barcodeSharp, barcodeOutline } from 'ionicons/icons';
-import { ref, computed, watch, onMounted } from 'vue';
+} from "@ionic/vue";
+import { barcodeSharp, barcodeOutline } from "ionicons/icons";
+import { ref, computed, watch, onMounted } from "vue";
 
-import { Product } from '@/services/DatabaseService';
-import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
+import { Product } from "@/services/DatabaseService";
+import { useBarcodeScanner } from "@/composables/useBarcodeScanner";
 const { openBarcodeScanner } = useBarcodeScanner();
 
 const props = withDefaults(
   defineProps<{
-    type: 'add' | 'update';
+    type: "add" | "update";
     product?: Product | null;
   }>(),
   {
     product: null,
-  }
+  },
 );
 
 //------------------------------------------------------------------------------
@@ -113,7 +108,7 @@ const form_data = ref<Product>({} as Product);
 
 const isFormIncomplete = computed(() => {
   return (
-    form_data.value.name === '' ||
+    form_data.value.name === "" ||
     form_data.value.price == null || // use == to check for null and undefined
     form_data.value.price < 0
   );
@@ -124,12 +119,12 @@ const form_has_changed = computed(() => {
 });
 const modal_vars = computed(() => {
   let title, confirm;
-  if (props.type === 'add') {
-    title = 'Nuevo Producto';
-    confirm = 'Agregar';
-  } else if (props.type === 'update') {
-    title = 'Modificar Producto';
-    confirm = 'Actualizar';
+  if (props.type === "add") {
+    title = "Nuevo Producto";
+    confirm = "Agregar";
+  } else if (props.type === "update") {
+    title = "Modificar Producto";
+    confirm = "Actualizar";
   } else {
     // TODO: Throw error, idk
     console.assert(false, `El prop '${props.type}' no es valido`);
@@ -142,9 +137,9 @@ watch(barcode, async (new_barcode) => {
     if (false) {
       // TODO: check if barcode is already on database
       const alert = await alertController.create({
-        header: 'Advertencia',
-        message: 'Codigo de Barras ya esta relacionado con otro producto',
-        buttons: ['OK'],
+        header: "Advertencia",
+        message: "Codigo de Barras ya esta relacionado con otro producto",
+        buttons: ["OK"],
       });
       await alert.present();
     }
@@ -176,9 +171,9 @@ const escanearBarcode = async () => {
 const handleSubmit = async () => {
   if (isFormIncomplete.value) {
     const alert = await alertController.create({
-      header: 'Error',
-      message: 'Nombre y/o Precio invalidos',
-      buttons: ['OK'],
+      header: "Error",
+      message: "Nombre y/o Precio invalidos",
+      buttons: ["OK"],
     });
     await alert.present();
     return;
@@ -191,7 +186,7 @@ const cerrarModal = async (producto: Product | null) => {
   const modal = await modalController.getTop();
   if (modal) {
     modal.canDismiss = true;
-    modal.dismiss(producto, producto ? 'confirm' : 'cancel');
+    modal.dismiss(producto, producto ? "confirm" : "cancel");
   }
 };
 
@@ -203,12 +198,12 @@ watch(
     const { name, price, barcode } = new_val;
     const modal = await modalController.getTop();
     if (modal) {
-      const has_changed = name !== '' || price !== null || barcode !== null;
+      const has_changed = name !== "" || price !== null || barcode !== null;
       modal.canDismiss = !has_changed;
       ableDismiss.value = !has_changed;
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 /*

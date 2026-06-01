@@ -15,9 +15,7 @@
 
     <!-- TODO: temporal solution -->
     <ion-header class="ion-text-right">
-      <ion-button v-if="!is_sel_mode_open" @click="is_sel_mode_open = true"
-        >Seleccionar</ion-button
-      >
+      <ion-button v-if="!is_sel_mode_open" @click="is_sel_mode_open = true">Seleccionar</ion-button>
       <ion-button v-if="is_sel_mode_open" @click="is_sel_mode_open = false"
         >Cerrar Seleccion</ion-button
       >
@@ -75,16 +73,16 @@ import {
   alertController,
   useBackButton,
   onIonViewDidEnter,
-} from '@ionic/vue';
-import { addOutline, barcodeOutline, trash } from 'ionicons/icons';
-import { ref, watch, computed, onMounted, nextTick } from 'vue';
+} from "@ionic/vue";
+import { addOutline, barcodeOutline, trash } from "ionicons/icons";
+import { ref, watch, computed, onMounted, nextTick } from "vue";
 
-import { useBarcodeScanner } from '@/composables/useBarcodeScanner';
-import { useDatabase, Product } from '@/composables/useDatabase';
+import { useBarcodeScanner } from "@/composables/useBarcodeScanner";
+import { useDatabase, Product } from "@/composables/useDatabase";
 
-import PageTemplate from '@/views/PageTemplate.vue';
-import TablaInventario from '@/components/TablaInventario.vue';
-import ModalFormularioProducto from '@/components/ModalFormularioProducto.vue';
+import PageTemplate from "@/views/PageTemplate.vue";
+import TablaInventario from "@/components/TablaInventario.vue";
+import ModalFormularioProducto from "@/components/ModalFormularioProducto.vue";
 
 //------------------------------------------------------------------------------
 
@@ -95,10 +93,10 @@ const productos = ref<Product[]>([]);
 const selected_products = ref<Product[]>([]);
 const is_sel_mode_open = ref<boolean>(false);
 
-const search_text = ref<string>('');
+const search_text = ref<string>("");
 
 const filteredProductos = computed(() => {
-  if (search_text.value.trim() === '') {
+  if (search_text.value.trim() === "") {
     return productos.value;
   }
   const search_lower = search_text.value.toLowerCase();
@@ -113,23 +111,23 @@ watch(
   () => selected_products.value.length,
   (new_selection) => {
     if (new_selection) {
-      console.log('Added to selection: ', selected_products.value);
+      console.log("Added to selection: ", selected_products.value);
     }
-  }
+  },
 );
 
 watch(
   () => is_sel_mode_open.value,
   (new_bool) => {
     if (new_bool !== null) {
-      console.log('Open/Close selection mode: ', new_bool);
+      console.log("Open/Close selection mode: ", new_bool);
     }
 
     // NOTE: dont delete this watch
     if (new_bool === false) {
       selected_products.value = [];
     }
-  }
+  },
 );
 
 //------------------------------------------------------------------------------
@@ -147,7 +145,7 @@ const buscarPorBarcode = async () => {
         await agregarProducto({ barcode: barcode } as Product);
       } else {
         // TODO: handle two or more products with the same barcode (ERROR)
-        console.warn('More than one product with the same barcode');
+        console.warn("More than one product with the same barcode");
       }
     }
   }
@@ -161,7 +159,7 @@ const agregarProducto = async (producto: Product | null) => {
   const modal = await modalController.create({
     component: ModalFormularioProducto,
     componentProps: {
-      type: 'add',
+      type: "add",
       product: { ...producto },
     },
   });
@@ -180,7 +178,7 @@ const updateProduct = async (producto: Product) => {
   const modal = await modalController.create({
     component: ModalFormularioProducto,
     componentProps: {
-      type: 'update',
+      type: "update",
       product: { ...producto },
     },
   });
@@ -198,15 +196,15 @@ const updateProduct = async (producto: Product) => {
 const deleteProducts = async () => {
   const ids = selected_products.value.map((p) => p.id);
   const alert = await alertController.create({
-    header: 'Eliminar Producto',
-    message: '¿Estás seguro de eliminar (' + ids.length + ') productos ?',
+    header: "Eliminar Producto",
+    message: "¿Estás seguro de eliminar (" + ids.length + ") productos ?",
     buttons: [
       {
-        text: 'Cancelar',
-        role: 'cancel',
+        text: "Cancelar",
+        role: "cancel",
       },
       {
-        text: 'Eliminar',
+        text: "Eliminar",
         handler: async () => {
           await db.removeProducts(ids);
           await recargarProductos();
@@ -224,8 +222,8 @@ const deleteProducts = async () => {
 
 function tryCatch() {
   let did_catch = false;
-  if (search_text.value.trim() !== '') {
-    search_text.value = '';
+  if (search_text.value.trim() !== "") {
+    search_text.value = "";
     did_catch = true;
   } else if (is_sel_mode_open.value) {
     is_sel_mode_open.value = false;

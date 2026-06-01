@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import {
   IonHeader,
   IonToolbar,
@@ -43,8 +43,8 @@ import {
   IonFabButton,
   IonRange,
   modalController,
-} from '@ionic/vue';
-import { close, flashlight } from 'ionicons/icons';
+} from "@ionic/vue";
+import { close, flashlight } from "ionicons/icons";
 import {
   Barcode,
   BarcodeScanner,
@@ -52,8 +52,8 @@ import {
   BarcodeValueType,
   LensFacing,
   StartScanOptions,
-} from '@capacitor-mlkit/barcode-scanning';
-import { Capacitor } from '@capacitor/core';
+} from "@capacitor-mlkit/barcode-scanning";
+import { Capacitor } from "@capacitor/core";
 
 export interface CodBarra {
   value: string;
@@ -83,12 +83,12 @@ const props = withDefaults(
       BarcodeFormat.UpcA,
       BarcodeFormat.UpcE,
     ],
-  }
+  },
 );
 
 const squareElement = ref<HTMLDivElement | undefined>(undefined);
 const videoElement = ref<HTMLVideoElement | undefined>(undefined);
-const isWeb = ref<boolean>(Capacitor.getPlatform() === 'web');
+const isWeb = ref<boolean>(Capacitor.getPlatform() === "web");
 const isTorchAvailable = ref(false);
 const minZoomRatio = ref<number | undefined>(undefined);
 const maxZoomRatio = ref<number | undefined>(undefined);
@@ -116,7 +116,7 @@ const setZoomRatio = (event: CustomEvent) => {
 };
 
 const closeModal = async (barcode: Barcode | null) => {
-  modalController.dismiss(barcode, 'confirm');
+  modalController.dismiss(barcode, "confirm");
 };
 
 const toggleTorch = async () => {
@@ -125,7 +125,7 @@ const toggleTorch = async () => {
 
 const startScan = async () => {
   // Hide everything behind the modal (see `src/theme/variables.scss`)
-  document.querySelector('body')?.classList.add('barcode-scanning-active');
+  document.querySelector("body")?.classList.add("barcode-scanning-active");
 
   await nextTick(); // Ensure elements are rendered before measuring
 
@@ -161,9 +161,9 @@ const startScan = async () => {
   let barcode_scan_succesful: boolean = false;
   let last_scan_time: number = Date.now();
   const colors = {
-    ready: '#e2e8f0',
-    blocked: '#334155',
-    detected: '#3195fc',
+    ready: "#e2e8f0",
+    blocked: "#334155",
+    detected: "#3195fc",
   };
   timeoutChecker = setInterval(() => {
     // Reset the flag to block the listener
@@ -174,7 +174,7 @@ const startScan = async () => {
   }, ON_SCANNED_TIMEOUT);
   squareElement.value!.style.borderColor = colors.ready;
 
-  listener = await BarcodeScanner.addListener('barcodesScanned', async (event) => {
+  listener = await BarcodeScanner.addListener("barcodesScanned", async (event) => {
     last_scan_time = Date.now();
 
     const firstBarcode: Barcode | undefined = event.barcodes[0];
@@ -221,7 +221,7 @@ const startScan = async () => {
 };
 const stopScan = async () => {
   // Show everything behind the modal again
-  document.querySelector('body')?.classList.remove('barcode-scanning-active');
+  document.querySelector("body")?.classList.remove("barcode-scanning-active");
   if (listener) listener.remove();
   clearInterval(timeoutChecker);
   await BarcodeScanner.stopScan();
