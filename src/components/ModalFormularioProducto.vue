@@ -20,25 +20,37 @@
             </ion-col>
           </ion-row>
 
-          <ion-row class="ion-align-items-center">
-            <ion-col class="ion-flex">
+          <ion-row>
+            <ion-col size="8">
               <ion-input
                 v-model="form_data.price"
                 label="Precio"
                 type="number"
                 label-placement="floating"
+                expand="block"
                 fill="outline"
               ></ion-input>
             </ion-col>
-            <ion-col class="ion-no-flex" size="auto">
-              <ion-button
-                @click="escanearBarcode"
-                :color="form_data.barcode ? 'success' : 'medium'"
-                fill="outline"
-              >
-                {{ form_data.barcode || "Cod. Barra" }}
+            <ion-col size="4">
+              <ion-button @click="escanearBarcode" fill="outline" expand="block">
+                {{ "Scan" }}
                 <ion-icon slot="end" aria-hidden="true" :ios="barcodeOutline" :md="barcodeSharp" />
               </ion-button>
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <!-- TODO(barcodes): update this logic to account for barcodes as an array -->
+            <ion-col class="ion-no-flex" size="auto">
+              <ion-chip
+                v-for="(bc, index) in form_data.barcodes"
+                :key="index"
+                :color="bc == barcode ? 'success' : 'medium'"
+                :outline="true"
+              >
+                <ion-label>{{ bc }}</ion-label>
+                <ion-icon :icon="closeCircle" @click="removerBarcode(bc)"></ion-icon>
+              </ion-chip>
             </ion-col>
           </ion-row>
 
@@ -76,16 +88,18 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonChip,
+  IonLabel,
   IonIcon,
   alertController,
   modalController,
   onIonViewDidEnter,
   useBackButton,
 } from "@ionic/vue";
-import { barcodeSharp, barcodeOutline } from "ionicons/icons";
-import { ref, computed, watch, onMounted } from "vue";
+import { barcodeSharp, barcodeOutline, closeCircle } from "ionicons/icons";
+import { ref, computed, watch, onMounted, toRaw } from "vue";
 
-import { Product } from "@/services/DatabaseService";
+import { useDatabase, Product } from "@/composables/useDatabase";
 import { useBarcodeScanner } from "@/composables/useBarcodeScanner";
 const { openBarcodeScanner } = useBarcodeScanner();
 
@@ -93,18 +107,26 @@ const props = withDefaults(
   defineProps<{
     type: "add" | "update";
     product?: Product | null;
+    found_with_barcode: string | null;
   }>(),
   {
     product: null,
+    found_with_barcode: null,
   },
 );
 
 //------------------------------------------------------------------------------
 
+const db = useDatabase();
 const barcode = ref<string | null>(null);
 
 const ableDismiss = ref<boolean>(true);
-const form_data = ref<Product>({} as Product);
+const form_data = ref<Product>({
+  id: null,
+  name: "",
+  price: 0,
+  barcodes: [],
+} as Product);
 
 const isFormIncomplete = computed(() => {
   return (
@@ -132,26 +154,9 @@ const modal_vars = computed(() => {
   return { title: title, confirm: confirm };
 });
 
-watch(barcode, async (new_barcode) => {
-  if (new_barcode) {
-    if (false) {
-      // TODO: check if barcode is already on database
-      const alert = await alertController.create({
-        header: "Advertencia",
-        message: "Codigo de Barras ya esta relacionado con otro producto",
-        buttons: ["OK"],
-      });
-      await alert.present();
-    }
-
-    form_data.value.barcode = new_barcode;
-  }
-});
-
 onMounted(async () => {
-  if (props.product) {
-    form_data.value = props.product;
-  }
+  if (props.product) form_data.value = { ...form_data.value, ...props.product };
+  if (props.found_with_barcode) barcode.value = props.found_with_barcode;
   /*
   const modal = await modalController.getTop();
   if (modal) {
@@ -166,6 +171,37 @@ onMounted(async () => {
 
 const escanearBarcode = async () => {
   barcode.value = await openBarcodeScanner();
+  await agregarBarcode(barcode.value);
+};
+const agregarBarcode = async (barcode: string | null) => {
+  if (!barcode) {
+    return;
+  }
+
+  let msg = null;
+  if (form_data.value.barcodes.includes(barcode)) {
+    msg = "Codigo de Barras ya esta incluido en este producto";
+  } else if (await db.getProductByBarcode(barcode)) {
+    msg = "Codigo de Barras ya esta relacionado con otro producto";
+  }
+
+  if (msg) {
+    const alert = await alertController.create({
+      header: "Advertencia",
+      message: msg,
+      buttons: ["OK"],
+    });
+    await alert.present();
+    return;
+  }
+
+  form_data.value.barcodes.push(barcode);
+};
+const removerBarcode = async (barcode: string | null) => {
+  if (!barcode) {
+    return;
+  }
+  form_data.value.barcodes = form_data.value.barcodes.filter((b) => b !== barcode);
 };
 
 const handleSubmit = async () => {
@@ -195,10 +231,10 @@ const cerrarModal = async (producto: Product | null) => {
 watch(
   form_data,
   async (new_val) => {
-    const { name, price, barcode } = new_val;
+    const { name, price, barcodes } = new_val;
     const modal = await modalController.getTop();
     if (modal) {
-      const has_changed = name !== "" || price !== null || barcode !== null;
+      const has_changed = name !== "" || price !== null || barcodes.length > 0;
       modal.canDismiss = !has_changed;
       ableDismiss.value = !has_changed;
     }

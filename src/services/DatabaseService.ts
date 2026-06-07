@@ -12,10 +12,10 @@ import { db_inventario_schema } from "@/utils/sqlite-schemas";
 const platform = Capacitor.getPlatform();
 
 export interface Product {
-  id: number;
+  id?: number | null;
   name: string;
   price: number;
-  barcode: string | null;
+  barcodes: string[];
 }
 
 export class DatabaseService {
@@ -94,50 +94,51 @@ export class DatabaseService {
     await this.ensureInitialized();
     const res = await this.db.query(
       `
-        SELECT id, name, price, barcode
+        SELECT id, name, price, barcodes
         FROM Product
         WHERE sql_deleted = 0;
       `,
     );
-    return res.values as Product[];
+
+    return this.sql_to_ts(res.values as any[]);
   }
 
   async getProductsByName(name: string): Promise<Product[]> {
     await this.ensureInitialized();
     const res = await this.db.query(
       `
-        SELECT id, name, price, barcode
+        SELECT id, name, price, barcodes
         FROM Product
         WHERE name LIKE ?
         AND sql_deleted = 0;
       `,
       [`%${name}%`],
     );
-    return res.values as Product[];
+    return this.sql_to_ts(res.values as any[]);
   }
 
-  async getProductsByBarcode(barcode: string): Promise<Product[]> {
+  async getProductByBarcode(barcode: string): Promise<Product> {
     await this.ensureInitialized();
     const res = await this.db.query(
       `
-        SELECT id, name, price, barcode
+        SELECT id, name, price, barcodes
         FROM Product
-        WHERE barcode = ?
+        WHERE ',' || barcodes || ',' LIKE ?
         AND sql_deleted = 0;
       `,
-      [barcode],
+      [`%,${barcode},%`],
     );
-    return res.values as Product[];
+    return this.sql_to_ts(res.values as any[])[0];
   }
 
   async addProduct(product: Product): Promise<void> {
     await this.ensureInitialized();
     const res = await this.db.run(
       `
-        INSERT INTO Product (name, price, barcode)
+        INSERT INTO Product (name, price, barcodes)
         VALUES (?, ?, ?);
       `,
-      this.product_to_array(product),
+      this.ts_to_sql(product),
     );
     await this.check_run_response(res);
   }
@@ -159,15 +160,15 @@ export class DatabaseService {
     await this.check_run_response(res);
   }
 
-  async updateProduct(id: string, product: Product): Promise<void> {
+  async updateProduct(product: Product): Promise<void> {
     await this.ensureInitialized();
     const res = await this.db.run(
       `
         UPDATE Product
-        SET name = ?, price = ?, barcode = ?
+        SET name = ?, price = ?, barcodes = ?
         WHERE id = ?
       `,
-      this.product_to_array(product).concat([id]),
+      this.ts_to_sql(product),
     );
     await this.check_run_response(res);
   }
@@ -183,18 +184,15 @@ export class DatabaseService {
     }
   }
 
-  product_to_array(product: Product): any[] {
-    return [
-      product.name,
-      product.price,
-      (product.barcode ?? "").trim() === "" ? null : product.barcode,
-    ];
+  // TODO: use typeorm or similar
+  ts_to_sql(product: Product): any[] {
+    return [product.name, product.price, (product.barcodes ?? []).join(","), product.id];
   }
-
-  array_to_product(array: any[]): Product[] {
-    return array.map((row) => {
+  sql_to_ts(rows: any[]): Product[] {
+    return rows.map((r) => {
       return {
-        ...row,
+        ...r,
+        barcodes: r.barcodes ? r.barcodes.split(",") : [],
       };
     });
   }

@@ -63,10 +63,7 @@ import TablaInventario from "@/components/TablaInventario.vue";
 //------------------------------------------------------------------------------
 
 const db = useDatabase();
-const productos = ref<Product[]>([
-  { id: 0, name: "Pepsi", price: 2.0, barcode: null },
-  { id: 1, name: "Sprite", price: 2.5, barcode: null },
-]);
+const productos = ref<Product[]>([]);
 const selected_products = ref<Product[]>([]);
 
 const search_text = ref("");

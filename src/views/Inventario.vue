@@ -31,7 +31,7 @@
 
     <!-- Botón flotante para agregar productos -->
     <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-      <ion-fab-button v-if="!is_sel_mode_open" @click="agregarProducto(null)">
+      <ion-fab-button v-if="!is_sel_mode_open" @click="agregarProducto()">
         <ion-icon :icon="addOutline" />
       </ion-fab-button>
     </ion-fab>
@@ -134,20 +134,14 @@ watch(
 
 const buscarPorBarcode = async () => {
   const barcode = await openBarcodeScanner();
-
   if (barcode !== null) {
-    const prods = await db.getProductsByBarcode(barcode);
-
-    if (prods) {
-      if (prods.length === 1) {
-        await updateProduct(prods[0]);
-      } else if (prods.length === 0) {
-        await agregarProducto({ barcode: barcode } as Product);
-      } else {
-        // TODO: handle two or more products with the same barcode (ERROR)
-        console.warn("More than one product with the same barcode");
-      }
+    const prod = await db.getProductByBarcode(barcode);
+    if (!prod) {
+      // TODO(barcodes): add popup or text somewhere to let user know
+      console.log("No product found with that barcode");
+      return;
     }
+    await updateProduct(prod, barcode);
   }
 };
 
@@ -155,12 +149,12 @@ const recargarProductos = async () => {
   productos.value = await db.getProducts();
 };
 
-const agregarProducto = async (producto: Product | null) => {
+const agregarProducto = async () => {
   const modal = await modalController.create({
     component: ModalFormularioProducto,
     componentProps: {
       type: "add",
-      product: { ...producto },
+      product: null,
     },
   });
 
@@ -174,12 +168,13 @@ const agregarProducto = async (producto: Product | null) => {
   }
 };
 
-const updateProduct = async (producto: Product) => {
+const updateProduct = async (producto: Product, barcode?: string | null) => {
   const modal = await modalController.create({
     component: ModalFormularioProducto,
     componentProps: {
       type: "update",
       product: { ...producto },
+      found_with_barcode: barcode,
     },
   });
 
@@ -188,7 +183,7 @@ const updateProduct = async (producto: Product) => {
   const { data, role } = await modal.onDidDismiss();
 
   if (data) {
-    await db.updateProduct(data.id, data);
+    await db.updateProduct(data);
     await recargarProductos();
   }
 };
@@ -206,7 +201,7 @@ const deleteProducts = async () => {
       {
         text: "Eliminar",
         handler: async () => {
-          await db.removeProducts(ids);
+          await db.removeProducts(ids as number[]);
           await recargarProductos();
 
           is_sel_mode_open.value = false;

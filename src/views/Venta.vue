@@ -110,17 +110,11 @@ import { search, cash, close, caretBackOutline, caretForwardOutline } from "ioni
 import { ref, watch } from "vue";
 
 import { useBarcodeScannerMultiple } from "@/composables/useBarcodeScanner";
-import { useDatabase } from "@/composables/useDatabase";
+import { useDatabase, Product } from "@/composables/useDatabase";
 
 import PageTemplate from "@/views/PageTemplate.vue";
 import ModalBuscarProducto from "@/components/ModalBuscarProducto.vue";
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  barcode: string | null;
-}
 interface VentaItem {
   product: Product;
   quantity: number;
@@ -134,12 +128,10 @@ const precio_total = ref<number>(0);
 const db = useDatabase();
 
 const barcodeScaneado = async (barcode: string) => {
-  // TODO: handle one or more products with same barcode?
-  const prods = await db.getProductsByBarcode(barcode);
-
-  if (prods.length > 0) {
+  const prod = await db.getProductByBarcode(barcode);
+  if (prod) {
     playScannerBeep();
-    agregarProducto(prods[0]);
+    agregarProducto(prod);
     calcularTotal();
   } else {
     playErrorBeep();

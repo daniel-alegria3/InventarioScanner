@@ -10,7 +10,7 @@ export const db_inventario_schema = {
         { column: "id", value: "INTEGER PRIMARY KEY AUTOINCREMENT" },
         { column: "name", value: "TEXT NOT NULL" },
         { column: "price", value: "REAL NOT NULL" },
-        { column: "barcode", value: "TEXT" },
+        { column: "barcodes", value: "TEXT" },
 
         { column: "last_modified", value: "INTEGER DEFAULT (strftime('%s', 'now'))" },
         {
@@ -19,7 +19,7 @@ export const db_inventario_schema = {
         },
       ],
       indexes: [
-        { name: "index_album_on_barcode", value: "barcode" },
+        { name: "index_product_on_barcode", value: "barcodes" },
         { name: "index_product_on_last_modified", value: "last_modified DESC" },
       ],
       triggers: [
