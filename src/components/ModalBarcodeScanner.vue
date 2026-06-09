@@ -175,7 +175,6 @@ const startScan = async () => {
     const firstBarcode = event.barcodes.find((barcode) => {
       const cp = barcode.cornerPoints;
       if (!cp) return false;
-      console.log(cp);
 
       if (isWeb.value) {
         const video = videoElement.value!;
