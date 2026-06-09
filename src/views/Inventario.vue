@@ -137,8 +137,12 @@ const buscarPorBarcode = async () => {
   if (barcode !== null) {
     const prod = await db.getProductByBarcode(barcode);
     if (!prod) {
-      // TODO(barcodes): add popup or text somewhere to let user know
-      console.log("No product found with that barcode");
+      const alert = await alertController.create({
+        header: "Advertencia",
+        message: `No existe un producto con barcode '${barcode}'`,
+        buttons: ["OK"],
+      });
+      await alert.present();
       return;
     }
     await updateProduct(prod, barcode);

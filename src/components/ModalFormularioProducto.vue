@@ -40,7 +40,6 @@
           </ion-row>
 
           <ion-row>
-            <!-- TODO(barcodes): update this logic to account for barcodes as an array -->
             <ion-col class="ion-no-flex" size="auto">
               <ion-chip
                 v-for="(bc, index) in form_data.barcodes"
@@ -107,7 +106,7 @@ const props = withDefaults(
   defineProps<{
     type: "add" | "update";
     product?: Product | null;
-    found_with_barcode: string | null;
+    found_with_barcode?: string | null;
   }>(),
   {
     product: null,
