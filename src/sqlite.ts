@@ -3,6 +3,8 @@ import { Capacitor } from "@capacitor/core";
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
 import { defineCustomElements as jeepSqlite } from "jeep-sqlite/loader";
 
+jeepSqlite(window);
+
 export const sqlite = new SQLiteConnection(CapacitorSQLite);
 
 export async function initializeSQLite(app: App) {
@@ -10,8 +12,6 @@ export async function initializeSQLite(app: App) {
 
   try {
     if (platform === "web") {
-      jeepSqlite(window);
-
       const jeepSqliteEl = document.createElement("jeep-sqlite");
 
       const baseUrl = import.meta.env.BASE_URL;

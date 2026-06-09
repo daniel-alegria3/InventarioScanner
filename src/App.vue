@@ -130,7 +130,7 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { Capacitor } from "@capacitor/core";
 onMounted(async () => {
   // Mobile Browser debugging
-  if (import.meta.env.DEV && route.query.eruda !== undefined) {
+  if (route.query.eruda !== undefined) {
     const eruda = (await import("eruda")).default;
     eruda.init();
   }
