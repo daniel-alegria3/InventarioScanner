@@ -12,7 +12,9 @@
 
   <ion-content>
     <video v-if="isWeb" ref="videoElement" autoplay class="video"></video>
-    <div ref="squareElement" class="square"></div>
+    <div ref="scanLineContainer" class="scan-line-container">
+      <div ref="scanLineElement" class="scan-line"></div>
+    </div>
     <div class="zoom-ratio-wrapper">
       <ion-range
         :min="minZoomRatio"
@@ -86,7 +88,8 @@ const props = withDefaults(
   },
 );
 
-const squareElement = ref<HTMLDivElement | undefined>(undefined);
+const scanLineContainer = ref<HTMLDivElement | undefined>(undefined);
+const scanLineElement = ref<HTMLDivElement | undefined>(undefined);
 const videoElement = ref<HTMLVideoElement | undefined>(undefined);
 const isWeb = ref<boolean>(Capacitor.getPlatform() === "web");
 const isTorchAvailable = ref(false);
@@ -101,6 +104,12 @@ onMounted(async () => {
   if (!isWeb.value) {
     const { available } = await BarcodeScanner.isTorchAvailable();
     isTorchAvailable.value = available;
+
+    minZoomRatio.value = (await BarcodeScanner.getMinZoomRatio()).zoomRatio;
+    maxZoomRatio.value = (await BarcodeScanner.getMaxZoomRatio()).zoomRatio;
+    // BarcodeScanner.setZoomRatio({
+    //   zoomRatio: Math.max(minZoomRatio.value * 1.2, Math.min(1.5, maxZoomRatio.value)),
+    // });
   }
   await BarcodeScanner.requestPermissions();
   await startScan();
@@ -126,84 +135,70 @@ const toggleTorch = async () => {
 const startScan = async () => {
   // Hide everything behind the modal (see `src/theme/variables.scss`)
   document.querySelector("body")?.classList.add("barcode-scanning-active");
-
-  await nextTick(); // Ensure elements are rendered before measuring
-
   const options: StartScanOptions = {
     formats: props.formats,
     lensFacing: props.lensFacing,
     videoElement: isWeb.value ? videoElement.value : undefined,
   };
+  const setLineColor = (color: string) => {
+    scanLineElement.value!.style.setProperty("--line-color", color);
+  };
 
-  const squareBoundingRect = squareElement.value!.getBoundingClientRect();
-  const scaledRect = squareBoundingRect
-    ? {
-        left: squareBoundingRect.left * window.devicePixelRatio,
-        right: squareBoundingRect.right * window.devicePixelRatio,
-        top: squareBoundingRect.top * window.devicePixelRatio,
-        bottom: squareBoundingRect.bottom * window.devicePixelRatio,
-        width: squareBoundingRect.width * window.devicePixelRatio,
-        height: squareBoundingRect.height * window.devicePixelRatio,
-      }
-    : undefined;
-
-  const detectionCornerPoints = scaledRect
-    ? [
-        [scaledRect.left, scaledRect.top],
-        [scaledRect.left + scaledRect.width, scaledRect.top],
-        [scaledRect.left + scaledRect.width, scaledRect.top + scaledRect.height],
-        [scaledRect.left, scaledRect.top + scaledRect.height],
-      ]
-    : undefined;
+  await nextTick(); // Ensure elements are rendered before measuring
+  const lineRect = scanLineElement.value!.getBoundingClientRect();
+  const lineY = lineRect.top + lineRect.height / 2;
+  const tolerance = lineRect.height * 3;
 
   // Controlled block to the listener from going off every frame that a barcode is on screen
   const ON_SCANNED_TIMEOUT = 500;
   let barcode_scan_succesful: boolean = false;
   let last_scan_time: number = Date.now();
   const colors = {
-    ready: "#e2e8f0",
+    ready: "#ef4444",
     blocked: "#334155",
-    detected: "#3195fc",
+    detected: "#22c55e",
   };
   timeoutChecker = setInterval(() => {
-    // Reset the flag to block the listener
     if (barcode_scan_succesful && Date.now() - last_scan_time > ON_SCANNED_TIMEOUT) {
       barcode_scan_succesful = false;
-      squareElement.value!.style.borderColor = colors.ready;
+      setLineColor(colors.ready);
     }
   }, ON_SCANNED_TIMEOUT);
-  squareElement.value!.style.borderColor = colors.ready;
+  setLineColor(colors.ready);
 
+  const getBarcodeBoundsY = (cp: NonNullable<Barcode["cornerPoints"]>) => {
+    const ys = cp.map((p) => p[1]);
+    return { minY: Math.min(...ys), maxY: Math.max(...ys) };
+  };
   listener = await BarcodeScanner.addListener("barcodesScanned", async (event) => {
     last_scan_time = Date.now();
+    const firstBarcode = event.barcodes.find((barcode) => {
+      const cp = barcode.cornerPoints;
+      if (!cp) return false;
+      console.log(cp);
 
-    const firstBarcode: Barcode | undefined = event.barcodes[0];
-    if (!firstBarcode) {
-      return;
-    }
-
-    const cornerPoints = firstBarcode.cornerPoints;
-    if (detectionCornerPoints && cornerPoints && !isWeb.value) {
-      if (
-        detectionCornerPoints[0][0] > cornerPoints[0][0] ||
-        detectionCornerPoints[0][1] > cornerPoints[0][1] ||
-        detectionCornerPoints[1][0] < cornerPoints[1][0] ||
-        detectionCornerPoints[1][1] > cornerPoints[1][1] ||
-        detectionCornerPoints[2][0] < cornerPoints[2][0] ||
-        detectionCornerPoints[2][1] < cornerPoints[2][1] ||
-        detectionCornerPoints[3][0] > cornerPoints[3][0] ||
-        detectionCornerPoints[3][1] < cornerPoints[3][1]
-      ) {
-        return;
+      if (isWeb.value) {
+        const video = videoElement.value!;
+        const videoRect = video.getBoundingClientRect();
+        const scaleY = videoRect.height / video.videoHeight;
+        const { minY, maxY } = getBarcodeBoundsY(cp);
+        const barcodeMinY = minY * scaleY + videoRect.top;
+        const barcodeMaxY = maxY * scaleY + videoRect.top;
+        return lineY >= barcodeMinY - tolerance && lineY <= barcodeMaxY + tolerance;
+      } else {
+        const { minY, maxY } = getBarcodeBoundsY(cp);
+        return lineY >= minY - tolerance && lineY <= maxY + tolerance;
       }
-    }
+    });
+
+    if (!firstBarcode) return;
 
     if (barcode_scan_succesful) {
-      squareElement.value!.style.borderColor = colors.blocked;
+      setLineColor(colors.blocked);
       return;
     }
     barcode_scan_succesful = true;
-    squareElement.value!.style.borderColor = colors.detected;
+    setLineColor(colors.detected);
 
     if (props.onBarcodeScanned) {
       await props.onBarcodeScanned(firstBarcode);
@@ -213,11 +208,6 @@ const startScan = async () => {
   });
 
   await BarcodeScanner.startScan(options);
-
-  if (!isWeb.value) {
-    minZoomRatio.value = (await BarcodeScanner.getMinZoomRatio()).zoomRatio;
-    maxZoomRatio.value = (await BarcodeScanner.getMaxZoomRatio()).zoomRatio;
-  }
 };
 const stopScan = async () => {
   // Show everything behind the modal again
@@ -232,17 +222,40 @@ const stopScan = async () => {
 ion-content {
   --background: transparent;
 }
-.square {
+
+.scan-line-container {
   position: absolute;
-  left: 50%;
+  left: 20%;
+  right: 20%;
   top: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 16px;
-  width: 200px;
-  height: 200px;
-  border: 6px solid white;
+  transform: translateY(-50%);
+  height: 160px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(239, 68, 68, 0.08) 40%,
+    rgba(239, 68, 68, 0.15) 50%,
+    rgba(239, 68, 68, 0.08) 60%,
+    transparent
+  );
   box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
 }
+.scan-line {
+  --line-color: #ef4444;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 2px;
+  background-color: var(--line-color);
+  border-radius: 2px;
+  box-shadow: 0 0 6px 2px var(--line-color);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
 .video {
   position: absolute;
   left: 0;
