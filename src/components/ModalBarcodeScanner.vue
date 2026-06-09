@@ -100,16 +100,9 @@ let listener: any = null;
 let timeoutChecker: any = null;
 
 onMounted(async () => {
-  await nextTick();
   if (!isWeb.value) {
     const { available } = await BarcodeScanner.isTorchAvailable();
     isTorchAvailable.value = available;
-
-    minZoomRatio.value = (await BarcodeScanner.getMinZoomRatio()).zoomRatio;
-    maxZoomRatio.value = (await BarcodeScanner.getMaxZoomRatio()).zoomRatio;
-    // BarcodeScanner.setZoomRatio({
-    //   zoomRatio: Math.max(minZoomRatio.value * 1.2, Math.min(1.5, maxZoomRatio.value)),
-    // });
   }
   await BarcodeScanner.requestPermissions();
   await startScan();
@@ -185,6 +178,7 @@ const startScan = async () => {
         const barcodeMaxY = maxY * scaleY + videoRect.top;
         return lineY >= barcodeMinY - tolerance && lineY <= barcodeMaxY + tolerance;
       } else {
+        // TODO: This logic doesnt really work on apk builds (line is not where it seems)kj:
         const { minY, maxY } = getBarcodeBoundsY(cp);
         return lineY >= minY - tolerance && lineY <= maxY + tolerance;
       }
@@ -207,6 +201,14 @@ const startScan = async () => {
   });
 
   await BarcodeScanner.startScan(options);
+
+  if (!isWeb.value) {
+    minZoomRatio.value = (await BarcodeScanner.getMinZoomRatio()).zoomRatio;
+    maxZoomRatio.value = (await BarcodeScanner.getMaxZoomRatio()).zoomRatio;
+    BarcodeScanner.setZoomRatio({
+      zoomRatio: Math.max(minZoomRatio.value * 1.2, Math.min(1.5, maxZoomRatio.value)),
+    });
+  }
 };
 const stopScan = async () => {
   // Show everything behind the modal again
